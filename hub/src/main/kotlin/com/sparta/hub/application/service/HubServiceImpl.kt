@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.sparta.hub.application.dto.RouteInfo
 import com.sparta.hub.application.dto.RouteResult
 import com.sparta.hub.application.dto.RouteState
+import com.sparta.hub.application.dto.toDto
+import com.sparta.hub.application.redis.RedisService
 import com.sparta.hub.domain.exception.NotFoundHubException
 import com.sparta.hub.domain.exception.UnableCalculateRouteException
 import com.sparta.hub.domain.model.Hub
@@ -11,8 +13,12 @@ import com.sparta.hub.domain.model.HubRoute
 import com.sparta.hub.domain.repository.HubRepository
 import com.sparta.hub.domain.repository.HubRouteRepository
 import com.sparta.hub.domain.service.HubService
+import com.sparta.hub.presentation.api.request.HubRequestDto
+import com.sparta.hub.presentation.api.response.HubDetailResponseDto
+import com.sparta.hub.presentation.api.response.HubResponseDto
+import com.sparta.hub.presentation.api.response.toDto
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
@@ -23,6 +29,7 @@ import java.util.*
 @Transactional
 class HubServiceImpl(
     private val webClient: WebClient,
+    private val redisService: RedisService,
     private val hubRepository: HubRepository,
     private val hubRouteRepository: HubRouteRepository,
 ) : HubService {
@@ -49,30 +56,7 @@ class HubServiceImpl(
 
     override fun registerHub(hubPosition: String, hubName: String): UUID {
 
-        val result = webClient
-            .get()
-            .uri("https://maps.googleapis.com/maps/api/geocode/json?address=$hubPosition&key=$geocoderApiKey")
-            .retrieve()
-            .bodyToMono(JsonNode::class.java)
-            .map { response ->
-
-                println("Full Response: ${response.toPrettyString()}")
-
-                val results = response.get("results")
-
-                val firstResult = results.get(0)
-                val geometry = firstResult?.get("geometry")
-                val location = geometry?.get("location")
-
-                mapOf(
-                    "latitude" to location?.get("lat")?.asDouble(),
-                    "longitude" to location?.get("lng")?.asDouble()
-                )
-            }
-            .onErrorResume { ex ->
-                Mono.error(ex)
-            }
-            .block()
+        val result = findLatitudeAndLongitude(hubPosition)
 
         return hubRepository.save(
             Hub(
@@ -84,10 +68,14 @@ class HubServiceImpl(
         ).id!!
     }
 
+    @Scheduled(cron = "0 0 0 * * *")
     override fun navigateHubRoutes() {
 
-        val hubs = hubRepository.findAll()
+        val hubRoutes = hubRouteRepository.findAll()
+        val hubs = hubRoutes.mapNotNull { it.startHub }.distinct()
+
         val hubMap = hubs.associateBy { it.name }
+        val hubRouteMap = hubRoutes.associateBy { "${it.startHub?.id}-${it.endHub?.id}" }
 
         val hubRouteList: List<HubRoute> = connections.flatMap { (startHubName, connectedHubs) ->
             connectedHubs.flatMap { endHubName ->
@@ -97,25 +85,115 @@ class HubServiceImpl(
                 val forwardResult = calculateForHubRoute(startHub, endHub)
                 val reverseResult = calculateForHubRoute(endHub, startHub)
 
-                listOfNotNull(forwardResult, reverseResult).distinct()
+                val forwardHubRoute = hubRouteMap["${startHub.id}-${endHub.id}"].apply {
+                    this?.estimatedMeter = forwardResult?.estimatedMeter
+                    this?.estimatedSecond = forwardResult?.estimatedSecond
+                }
+
+                val reverseHubRoute = hubRouteMap["${endHub.id}-${startHub.id}"].apply {
+                    this?.estimatedMeter = reverseResult?.estimatedMeter
+                    this?.estimatedSecond = reverseResult?.estimatedSecond
+                }
+
+                listOfNotNull(forwardHubRoute, reverseHubRoute)
             }
 
-        }
+        }.distinct()
 
         hubRouteRepository.saveAll(hubRouteList)
     }
 
-    @Cacheable(
-        value = ["hubRoutes"],
-        key = "#startHubName + '->' + #endHubName"
-    )
-    override fun getHubRoutes(startHubName: String, endHubName: String): RouteResult {
+    override fun getOptimalHubRoutes(startHubName: String, endHubName: String): RouteResult {
 
         val startHub = hubRepository.findByNameIs(startHubName).orElseThrow { NotFoundHubException() }
         val endHub = hubRepository.findByNameIs(endHubName).orElseThrow { NotFoundHubException() }
 
-        val createRouteInfoGraph = createRouteInfoGraph()
+        redisService.getHubRouteResult(startHubName, endHubName)?.let {
+            return it
+        }
 
+        val createRouteInfoGraph = hubRouteRepository.findAll().groupBy({ it.startHub!!.name }) {
+            RouteInfo(
+                destination = it.endHub?.name,
+                distance = it.estimatedMeter?.toInt(),
+                time = it.estimatedSecond?.toInt(),
+            )
+        }
+
+        return findOptimalRoute(startHub, endHub, createRouteInfoGraph)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getHubs(): List<HubResponseDto> {
+        return hubRepository.findAll().map { it.toDto() }
+    }
+
+    @Transactional(readOnly = true)
+    override fun getHubDetail(hubId: UUID): HubDetailResponseDto {
+        val hub = hubRepository.findById(hubId).orElseThrow { NotFoundHubException() }
+
+        val routeResultList = redisService.getHubRouteByStartingWithKey(hub.name)
+
+        return HubDetailResponseDto(
+            name = hub.name,
+            address = hub.address,
+            latitude = hub.latitude?.toInt(),
+            longitude = hub.longitude?.toInt(),
+            connectedHubList = routeResultList.map { it.toDto() }
+        )
+    }
+
+    override fun modifyHub(hubId: UUID, hubRequestDto: HubRequestDto): UUID {
+        val hub = hubRepository.findById(hubId).orElseThrow { NotFoundHubException() }
+
+        val latitudeAndLongitude = findLatitudeAndLongitude(hubRequestDto.address)
+
+        val latitude = latitudeAndLongitude?.get("latitude")
+        val longitude = latitudeAndLongitude?.get("longitude")
+
+        if (hubRequestDto.isDelete) {
+            hub.markAsDelete()
+        }
+        hub.updatePosition(latitude, longitude)
+        hub.updateName(hubRequestDto.name)
+
+        return hubRepository.save(hub).id!!
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    fun updateForOptimalHubRoutes() {
+
+        val hubRoutes = hubRouteRepository.findAll()
+
+        val createRouteInfoGraph = hubRoutes.groupBy({ it.startHub!!.name }) {
+            RouteInfo(
+                destination = it.endHub?.name,
+                distance = it.estimatedMeter?.toInt(),
+                time = it.estimatedSecond?.toInt(),
+            )
+        }
+
+        val hubs = hubRoutes.mapNotNull { it.startHub }.distinct()
+        val reverseList = hubs.asReversed()
+
+        hubs.forEach { hub ->
+            reverseList.forEach { reverseHub ->
+                if (hub.name != reverseHub.name) {
+
+                    redisService.setHubRouteResult(
+                        hub.name, reverseHub.name, findOptimalRoute(hub, reverseHub, createRouteInfoGraph)
+                    )
+                }
+            }
+        }
+    }
+
+    private fun findOptimalRoute(
+        startHub: Hub,
+        endHub: Hub,
+        createRouteInfoGraph: Map<String, List<RouteInfo>>
+    ): RouteResult {
+        
         val pq = PriorityQueue<RouteState>(compareBy { it.cumulativeTime })
         val visited = mutableSetOf<String>()
 
@@ -167,14 +245,39 @@ class HubServiceImpl(
                                 path = path + route.destination
                             )
                         )
+
                     }
+
                 }
+
             }
 
         }
 
         throw UnableCalculateRouteException()
     }
+
+    private fun findLatitudeAndLongitude(hubPosition: String) =
+        webClient
+            .get()
+            .uri("https://maps.googleapis.com/maps/api/geocode/json?address=$hubPosition&key=$geocoderApiKey")
+            .retrieve()
+            .bodyToMono(JsonNode::class.java)
+            .map { response ->
+
+                val firstResult = response["results"][0]
+                val geometry = firstResult["geometry"]
+                val location = geometry["location"]
+
+                mapOf(
+                    "latitude" to location["lat"]?.asDouble(),
+                    "longitude" to location["lng"]?.asDouble()
+                )
+            }
+            .onErrorResume { ex ->
+                Mono.error(ex)
+            }
+            .block()
 
     private fun calculateForHubRoute(startHub: Hub, endHub: Hub): HubRoute? {
         return webClient
@@ -184,28 +287,18 @@ class HubServiceImpl(
             .retrieve()
             .bodyToMono(JsonNode::class.java)
             .map { response ->
-                val routes = response.get("routes")
-                val firstRoute = routes.get(0)
-                val summary = firstRoute.get("summary")
+
+                val routes = response["routes"]
+                val firstRoute = routes[0]
+                val summary = firstRoute["summary"]
 
                 HubRoute(
-                    estimatedSecond = summary.get("duration")?.asDouble(),
-                    estimatedMeter = summary.get("distance")?.asDouble(),
+                    estimatedSecond = summary["duration"]?.asDouble(),
+                    estimatedMeter = summary["distance"]?.asDouble(),
                     startHub = startHub,
                     endHub = endHub
                 )
             }
             .block()
     }
-
-    private fun createRouteInfoGraph(): Map<String, List<RouteInfo>> {
-        return hubRouteRepository.findAll().groupBy({ it.startHub!!.name }) {
-            RouteInfo(
-                destination = it.endHub?.name,
-                distance = it.estimatedMeter?.toInt(),
-                time = it.estimatedSecond?.toInt(),
-            )
-        }
-    }
-
 }

@@ -13,16 +13,15 @@ import java.util.*
 @Entity
 class HubRoute(
     endHub: Hub,
+
     startHub: Hub,
-    estimatedSecond: Double?,
-    estimatedMeter: Double?
+
+    @Column(nullable = false)
+    var estimatedSecond: Double?,
+
+    @Column(nullable = false)
+    var estimatedMeter: Double?
 ) : BaseTimeEntity() {
-
-    @Column(nullable = false)
-    var estimatedSecond: Double? = estimatedSecond
-
-    @Column(nullable = false)
-    var estimatedMeter: Double? = estimatedMeter
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "end_hub_id", nullable = false)
