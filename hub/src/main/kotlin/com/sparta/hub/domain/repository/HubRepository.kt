@@ -9,5 +9,7 @@ interface HubRepository {
 
     fun findById(id: UUID): Optional<Hub>
 
+    fun findByNameIs(name: String): Optional<Hub>
+
     fun findAll(): List<Hub>
 }

@@ -1,8 +1,10 @@
 package com.sparta.hub.presentation.api.controller
 
+import com.sparta.hub.application.dto.RouteResult
 import com.sparta.hub.domain.service.HubService
 import com.sparta.hub.presentation.api.response.Response
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -16,7 +18,10 @@ class HubController(
 ) {
 
     @PostMapping
-    fun registerHub(@RequestParam address: String, @RequestParam hubName: String): Response<UUID> =
+    fun registerHub(
+        @RequestParam address: String,
+        @RequestParam hubName: String
+    ): Response<UUID> =
         Response(
             HttpStatus.CREATED.value(),
             HttpStatus.CREATED.reasonPhrase,
@@ -31,4 +36,14 @@ class HubController(
             hubService.navigateHubRoutes()
         )
 
+    @GetMapping("/routes")
+    fun getHubRoutes(
+        @RequestParam startHubName: String,
+        @RequestParam endHubName: String
+    ): Response<RouteResult> =
+        Response(
+            HttpStatus.OK.value(),
+            HttpStatus.OK.reasonPhrase,
+            hubService.getHubRoutes(startHubName, endHubName)
+        )
 }

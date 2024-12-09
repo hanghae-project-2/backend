@@ -1,6 +1,8 @@
 package com.sparta.hub.domain.model
 
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -10,23 +12,25 @@ import java.util.*
 
 @Entity
 class HubRoute(
-    endHubId: Hub,
-    startHubId: Hub,
+    endHub: Hub,
+    startHub: Hub,
     estimatedSecond: Double?,
     estimatedMeter: Double?
 ) : BaseTimeEntity() {
 
-    val estimatedSecond: Double? = estimatedSecond
+    @Column(nullable = false)
+    var estimatedSecond: Double? = estimatedSecond
 
-    val estimatedMeter: Double? = estimatedMeter
+    @Column(nullable = false)
+    var estimatedMeter: Double? = estimatedMeter
 
-    @ManyToOne
-    @JoinColumn(name = "end_hub_id")
-    val endHubId: Hub? = endHubId
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "end_hub_id", nullable = false)
+    var endHub: Hub? = endHub
 
-    @ManyToOne
-    @JoinColumn(name = "start_hub_id")
-    val startHubId: Hub? = startHubId
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "start_hub_id", nullable = false)
+    var startHub: Hub? = startHub
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
