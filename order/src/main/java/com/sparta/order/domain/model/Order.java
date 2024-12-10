@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Order extends BaseTime{
+public class Order extends AuditingFields {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)

@@ -5,9 +5,10 @@ import lombok.Builder;
 import java.util.UUID;
 
 @Builder
-public class OrderResponse {
-    private UUID orderId;
-    private UUID deliveryId;
-    private String message;
+public record OrderResponse(
+        UUID orderId,
+        UUID deliveryId
+){
+
 
 }

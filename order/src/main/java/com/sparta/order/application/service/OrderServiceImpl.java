@@ -37,9 +37,9 @@ public class OrderServiceImpl implements OrderService {
             Order.builder()
                     .productId(productId)
                     .status(OrderStatus.RECEIVED)
-                    .totalPrice(productPrice* request.getQuantity())
-                    .specialRequests(request.getSpecialRequests())
-                    .quantity(request.getQuantity())
+                    .totalPrice(productPrice* request.quantity())
+                    .specialRequests(request.specialRequests())
+                    .quantity(request.quantity())
                     .price(productPrice)
                     .recipientCompanyId(recipientCompanyId)
                     .build()
@@ -48,10 +48,9 @@ public class OrderServiceImpl implements OrderService {
 
 
         return OrderResponse.builder()
-                .orderId(order.getId())
                 .deliveryId(deliveryId)
-                .message("주문이 성공적으로 완료 되었습니다.")
-                .build();
+                .orderId(order.getId()).build();
+
     }
 
     @Override
@@ -66,7 +65,6 @@ public class OrderServiceImpl implements OrderService {
         return OrderResponse.builder()
                 .orderId(order.getId())
                 .deliveryId(deliveryId)
-                .message("주문 삭제가 성공적으로 완료 되었습니다.")
                 .build();
     }
 
@@ -78,6 +76,7 @@ public class OrderServiceImpl implements OrderService {
 
         return OrderDetail.builder()
                 .orderId(orderId)
+                .productId(order.getProductId())
                 .requestCompanyId(requestCompanyId)
                 .recipientCompanyName("gamgamjashop")
                 .recipientCompanyId(order.getRecipientCompanyId())
