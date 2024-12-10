@@ -1,16 +1,16 @@
 services:
-  mysql-db:
+  mysql-order-db:
     image: mysql:8.0.34
-    container_name: mysql-hub
+    container_name: mysql-order
     ports:
-      - "3307:3306"
+      - "3312:3306"
     env_file:
       - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${DATASOURCE_PASSWORD}
-      MYSQL_DATABASE: hub
+      MYSQL_DATABASE: order_service
     volumes:
-      - mysql-data-hub:/var/lib/mysql-hub
+      - mysql-data-order:/var/lib/mysql
     networks:
       - default
     healthcheck:
@@ -18,8 +18,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
 volumes:
-  mysql-data-hub:
+  mysql-data-order:
 
 networks:
   default:
