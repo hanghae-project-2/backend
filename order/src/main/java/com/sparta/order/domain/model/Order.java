@@ -1,8 +1,7 @@
 package com.sparta.order.domain.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
@@ -10,7 +9,9 @@ import java.util.UUID;
 @Entity
 @Getter
 @Table(name = "p_orders")
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseTime{
 
     @Id
@@ -39,4 +40,7 @@ public class Order extends BaseTime{
     private UUID recipientCompanyId;
 
 
+    public void deleteOrder(UUID deletedBy) {
+        super.delete(deletedBy);
+    }
 }

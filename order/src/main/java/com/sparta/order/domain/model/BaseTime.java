@@ -1,38 +1,9 @@
 package com.sparta.order.domain.model;
 
-/*
-@NotNull
-    var isDelete: Boolean = false
-        protected set
-
-    @CreatedDate
-    @Column(updatable = false)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    var createdAt: LocalDateTime? = LocalDateTime.now()
-        protected set
-
-    var createdBy: UUID? = null
-        protected set
-
-    @LastModifiedDate
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    var updatedAt: LocalDateTime? = null
-        protected set
-
-    var updatedBy: UUID? = null
-        protected set
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    var deletedAt: LocalDateTime? = null
-        protected set
-
-    var deletedBy: UUID? = null
-        protected set
-
- */
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Getter;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -43,7 +14,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+
 @MappedSuperclass
+@Getter
 @EntityListeners(value = {AuditingEntityListener.class})
 public abstract class BaseTime {
     @CreatedDate
@@ -85,4 +58,12 @@ public abstract class BaseTime {
     @Column(nullable = false)
     private Boolean isDelete = false;
 
+    protected void delete(UUID deletedBy) {
+        this.isDelete = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+    }
+
+    public BaseTime() {
+    }
 }
