@@ -13,7 +13,7 @@ import java.util.UUID
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
-abstract class BaseTimeEntity {
+abstract class BaseEntity {
 
     @NotNull
     var isPublic: Boolean = true

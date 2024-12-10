@@ -21,7 +21,7 @@ class HubRoute(
 
     @Column(nullable = false)
     var estimatedMeter: Double?
-) : BaseTimeEntity() {
+) : BaseEntity() {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "end_hub_id", nullable = false)
