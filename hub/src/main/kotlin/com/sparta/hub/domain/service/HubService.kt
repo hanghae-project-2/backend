@@ -19,4 +19,6 @@ interface HubService {
     fun getHubDetail(hubId: UUID): HubDetailResponseDto
 
     fun modifyHub(hubId: UUID, hubRequestDto: HubRequestDto): UUID
+
+    fun existHub(hubId: UUID): Boolean
 }

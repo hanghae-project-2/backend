@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.util.*
+import java.util.concurrent.TimeoutException
 
 @Service
 class HubServiceImpl(
@@ -150,6 +151,12 @@ class HubServiceImpl(
         hub.updateName(hubRequestDto.name)
 
         return hubRepository.save(hub).id!!
+    }
+
+    @Transactional(readOnly = true)
+    override fun existHub(hubId: UUID): Boolean {
+        throw TimeoutException()
+        return hubRepository.existsById(hubId)
     }
 
     @Transactional

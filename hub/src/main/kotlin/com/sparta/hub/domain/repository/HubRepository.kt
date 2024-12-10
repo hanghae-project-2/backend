@@ -13,4 +13,6 @@ interface HubRepository {
 
     fun findById(id: UUID): Optional<Hub>
 
+    fun existsById(id: UUID): Boolean
+
 }

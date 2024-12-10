@@ -95,7 +95,7 @@ eureka:
   instance:
     initial-status: up
     prefer-ip-address: false
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    instance-id: hub-server
   client:
     service-url:
       defaultZone: http://${EUREKA_NAME}:${EUREKA_PORT}/${EUREKA_HOST}/

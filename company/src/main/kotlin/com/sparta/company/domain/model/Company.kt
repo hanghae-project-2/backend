@@ -11,19 +11,26 @@ import java.util.*
 
 @Entity
 class Company(
+    name: String,
+    type: CompanyType,
+    address: String,
+    hubId: UUID
+) : BaseEntity() {
+
     @Column(nullable = false)
-    var name: String,
+    var name: String? = name
+        protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var type: CompanyType,
+    var type: CompanyType? = type
 
     @Column(nullable = false)
-    var hubId: UUID,
+    var hubId: UUID? = hubId
 
     @Column(nullable = false)
-    var address: String,
-) : BaseEntity() {
+    var address: String? = address
+        protected set
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

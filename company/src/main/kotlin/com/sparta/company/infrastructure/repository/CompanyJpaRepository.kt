@@ -11,4 +11,9 @@ interface CompanyJpaRepository : JpaRepository<Company, UUID>
 @Repository
 class CompanyRepositoryImpl(
     private val companyJpaRepository: CompanyJpaRepository
-) : CompanyRepository
+) : CompanyRepository {
+
+    override fun save(company: Company): Company {
+        return companyJpaRepository.save(company)
+    }
+}

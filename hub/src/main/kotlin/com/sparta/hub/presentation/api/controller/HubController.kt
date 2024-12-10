@@ -82,4 +82,9 @@ class HubController(
             HttpStatus.OK.reasonPhrase,
             hubService.modifyHub(hubId, hubRequestDto)
         )
+
+    @GetMapping("/company/{hubId}")
+    fun existHub(
+        @PathVariable hubId: UUID
+    ): Boolean = hubService.existHub(hubId)
 }
