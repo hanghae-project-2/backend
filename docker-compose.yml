@@ -1,0 +1,29 @@
+services:
+  redis:
+    image: redis:6.2.11
+    container_name: redis-container
+    ports:
+      - "6379:6379"
+    networks:
+      - default
+    volumes:
+      - redis-data:/var/lib/redis
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  zipkin:
+    image: openzipkin/zipkin:2.23.16
+    container_name: zipkin-container
+    ports:
+      - "9411:9411"
+    networks:
+      - default
+
+volumes:
+  redis-data:
+
+networks:
+  default:
+    driver: bridge
