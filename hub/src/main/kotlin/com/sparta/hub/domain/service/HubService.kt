@@ -17,7 +17,7 @@ interface HubService {
 
     fun getOptimalHubRoutes(startHubName: String, endHubName: String): RouteResult
 
-    fun getHubs(pageable: Pageable, requestDto: HubSearchRequestDto): Page<HubSummaryResponseDto>
+    fun searchHubs(pageable: Pageable, requestDto: HubSearchRequestDto): Page<HubSummaryResponseDto>
 
     fun getHubDetail(hubId: UUID): HubDetailResponseDto
 

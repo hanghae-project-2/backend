@@ -101,8 +101,8 @@ abstract class HubControllerDocs {
             )
         ]
     )
-    @GetMapping("/hubs")
-    abstract fun getHubs(
+    @GetMapping("/hubs/search")
+    abstract fun searchHubs(
         pageable: Pageable,
         hubSearchRequest: HubSearchRequest
     ): Response<Page<HubSummaryResponse>>

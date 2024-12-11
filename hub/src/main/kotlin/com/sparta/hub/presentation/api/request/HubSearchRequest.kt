@@ -5,11 +5,11 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
 data class HubSearchRequest(
-    @RequestParam
+    @RequestParam(required = false)
     val name: String?,
-    @RequestParam
+    @RequestParam(required = false)
     val address: String?,
-    @RequestParam
+    @RequestParam(required = false)
     val createdBy: UUID?,
 )
 

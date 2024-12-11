@@ -59,15 +59,15 @@ class HubController(
             hubService.getOptimalHubRoutes(startHubName, endHubName)
         )
 
-    @GetMapping
-    override fun getHubs(
+    @GetMapping("/search")
+    override fun searchHubs(
         pageable: Pageable,
         hubSearchRequest: HubSearchRequest
     ): Response<Page<HubSummaryResponse>> =
         Response(
             HttpStatus.OK.value(),
             HttpStatus.OK.reasonPhrase,
-            hubService.getHubs(pageable, hubSearchRequest.toDto()).toResponse()
+            hubService.searchHubs(pageable, hubSearchRequest.toDto()).toResponse()
         )
 
     @GetMapping("/{hubId}")

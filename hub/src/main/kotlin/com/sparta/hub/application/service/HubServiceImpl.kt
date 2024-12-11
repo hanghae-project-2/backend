@@ -123,7 +123,7 @@ class HubServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getHubs(pageable: Pageable, requestDto: HubSearchRequestDto): Page<HubSummaryResponseDto> {
+    override fun searchHubs(pageable: Pageable, requestDto: HubSearchRequestDto): Page<HubSummaryResponseDto> {
 
         return hubRepository.findPageBy(pageable, requestDto)
     }
