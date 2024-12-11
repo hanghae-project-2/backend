@@ -62,8 +62,12 @@ GET http://localhost:8082/hubs/routes?
     startHubName=서울특별시 센터&
     endHubName=강원특별자치도 센터
 
-### 허브 전체 조회
-GET http://localhost:8082/hubs
+### 허브 검색
+GET http://localhost:19092/hubs?
+    name=센터&
+    sort=name,desc&
+    sort=address,asc&
+    size=5
 
 ### 허브 단일 조회
 GET http://localhost:8082/hubs/7d343d3b-b54c-11ef-a0d4-0242ac120002

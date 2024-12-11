@@ -4,6 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.sparta.hub.application.dto.RouteInfo
 import com.sparta.hub.application.dto.RouteResult
 import com.sparta.hub.application.dto.RouteState
+import com.sparta.hub.application.dto.request.HubRequestDto
+import com.sparta.hub.application.dto.request.HubSearchRequestDto
+import com.sparta.hub.application.dto.response.HubDetailResponseDto
+import com.sparta.hub.application.dto.response.HubSummaryResponseDto
+import com.sparta.hub.application.dto.response.toResponseDto
 import com.sparta.hub.application.dto.toRouteInfo
 import com.sparta.hub.application.redis.RedisService
 import com.sparta.hub.domain.exception.NotFoundHubException
@@ -13,19 +18,15 @@ import com.sparta.hub.domain.model.HubRoute
 import com.sparta.hub.domain.repository.HubRepository
 import com.sparta.hub.domain.repository.HubRouteRepository
 import com.sparta.hub.domain.service.HubService
-import com.sparta.hub.presentation.api.request.HubRequestDto
-import com.sparta.hub.presentation.api.response.HubDetailResponseDto
-import com.sparta.hub.presentation.api.response.HubResponseDto
-import com.sparta.hub.presentation.api.response.toDto
-import com.sparta.hub.presentation.api.response.toResponseDto
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.util.*
-import java.util.concurrent.TimeoutException
 
 @Service
 class HubServiceImpl(
@@ -122,8 +123,9 @@ class HubServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getHubs(): List<HubResponseDto> {
-        return hubRepository.findAll().map { it.toDto() }
+    override fun getHubs(pageable: Pageable, requestDto: HubSearchRequestDto): Page<HubSummaryResponseDto> {
+
+        return hubRepository.findPageBy(pageable, requestDto)
     }
 
     @Transactional(readOnly = true)
@@ -155,7 +157,6 @@ class HubServiceImpl(
 
     @Transactional(readOnly = true)
     override fun existHub(hubId: UUID): Boolean {
-        throw TimeoutException()
         return hubRepository.existsById(hubId)
     }
 
