@@ -16,4 +16,8 @@ class CompanyRepositoryImpl(
     override fun save(company: Company): Company {
         return companyJpaRepository.save(company)
     }
+
+    override fun findByIdOrNull(id: UUID): Company? {
+        return companyJpaRepository.findById(id).orElse(null)
+    }
 }

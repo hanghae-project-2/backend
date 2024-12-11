@@ -13,5 +13,9 @@ enum class CompanyType(
         fun fromKey(key: String): CompanyType {
             return entries.find { it.key == key } ?: throw IncorrectCompanyTypeException()
         }
+
+        fun toKey(type: CompanyType): String {
+            return type.key
+        }
     }
 }

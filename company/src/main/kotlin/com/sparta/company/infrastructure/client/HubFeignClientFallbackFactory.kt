@@ -1,9 +1,9 @@
 package com.sparta.company.infrastructure.client
 
 import com.sparta.company.domain.exception.CircuitBreakerOpenException
+import com.sparta.company.domain.exception.InternalServerErrorException
 import com.sparta.company.domain.exception.ServerTimeoutException
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException
-import jakarta.ws.rs.InternalServerErrorException
 import org.springframework.cloud.openfeign.FallbackFactory
 import org.springframework.stereotype.Component
 import java.util.*

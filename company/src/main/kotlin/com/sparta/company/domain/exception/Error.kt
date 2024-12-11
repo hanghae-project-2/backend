@@ -12,4 +12,6 @@ enum class Error(val status: HttpStatus, val message: String) {
 
     CIRCUIT_BREAKER_OPEN(HttpStatus.BAD_REQUEST, "서비스가 일시적으로 사용 불가능합니다."),
     SERVER_TIMEOUT(HttpStatus.REQUEST_TIMEOUT, "응답 시간을 초과하였습니다."),
+
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생하였습니다.")
 }
