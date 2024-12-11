@@ -2,6 +2,7 @@ package com.sparta.delivery.domain.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,9 +13,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+
 @MappedSuperclass
+@Getter
 @EntityListeners(value = {AuditingEntityListener.class})
-public abstract class BaseTime {
+public abstract class AuditingFields {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -54,4 +57,12 @@ public abstract class BaseTime {
     @Column(nullable = false)
     private Boolean isDelete = false;
 
+    protected void delete(UUID deletedBy) {
+        this.isDelete = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+    }
+
+    public AuditingFields() {
+    }
 }

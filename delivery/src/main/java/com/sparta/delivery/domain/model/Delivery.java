@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.util.UUID;
 
@@ -12,7 +11,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @Table(name = "p_deliveries")
-public class Delivery {
+public class Delivery extends AuditingFields{
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)
@@ -34,7 +33,7 @@ public class Delivery {
     @Column(nullable = false)
     private String receiverName;
 
-    @Column(length = 255)
+    @Column()
     private String receiverSlackId;
 
     @Column(nullable = false)
@@ -49,4 +48,11 @@ public class Delivery {
     @Column(nullable = false)
     private UUID destinationHubId;
 
+    public void updateDelivery(DeliveryStatus status) {
+        this.currentStatus =status;
+    }
+
+    public void deleteDelivery(UUID deletedBy) {
+        super.delete(deletedBy);
+    }
 }

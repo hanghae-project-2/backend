@@ -1,0 +1,27 @@
+services:
+  mysql-delivery-db:
+    image: mysql:8.0.34
+    container_name: mysql-delivery
+    ports:
+      - "3313:3306"
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATASOURCE_PASSWORD}
+      MYSQL_DATABASE: delivery_service
+    volumes:
+      - mysql-data-delivery:/var/lib/mysql
+    networks:
+      - default
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql-data-delivery:
+
+networks:
+  default:
+    driver: bridge
