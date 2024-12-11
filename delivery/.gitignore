@@ -1,3 +1,11 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
 .apt_generated
 .classpath
 .factorypath
@@ -10,7 +18,7 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
+/.idea/**
 *.iws
 *.iml
 *.ipr
@@ -28,5 +36,6 @@ out/
 ### VS Code ###
 .vscode/
 
-/.idea
-.gradle
+application-key.yml
+.env
+
