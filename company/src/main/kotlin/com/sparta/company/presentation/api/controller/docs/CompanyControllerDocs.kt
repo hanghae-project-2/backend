@@ -1,8 +1,10 @@
 package com.sparta.company.presentation.api.controller.docs
 
 import com.sparta.company.presentation.api.request.BaseCompanyRequest
+import com.sparta.company.presentation.api.request.CompanySearchRequest
 import com.sparta.company.presentation.api.request.RegisterCompanyRequest
 import com.sparta.company.presentation.api.response.BaseCompanyResponse
+import com.sparta.company.presentation.api.response.CompanySummaryResponse
 import com.sparta.company.presentation.api.response.Response
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -10,6 +12,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -114,4 +118,20 @@ abstract class CompanyControllerDocs {
     abstract fun getCompany(
         @PathVariable companyId: UUID
     ): Response<BaseCompanyResponse>
+
+    @Operation(summary = "업체 검색", description = "업체를 검색하는 API 입니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "업체 검색 성공",
+                content = [Content(schema = Schema(implementation = Response::class))]
+            )
+        ]
+    )
+    @GetMapping("/companies/search")
+    abstract fun searchCompany(
+        pageable: Pageable,
+        request: CompanySearchRequest
+    ): Response<Page<CompanySummaryResponse>>
 }
