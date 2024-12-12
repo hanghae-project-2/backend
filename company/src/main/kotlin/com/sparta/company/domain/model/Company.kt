@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -18,22 +19,36 @@ class Company(
 ) : BaseEntity() {
 
     @Column(nullable = false)
-    var name: String? = name
+    var name: String = name
         protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var type: CompanyType? = type
+    var type: CompanyType = type
+        protected set
 
     @Column(nullable = false)
-    var hubId: UUID? = hubId
+    var hubId: UUID = hubId
+        protected set
 
     @Column(nullable = false)
-    var address: String? = address
+    var address: String = address
         protected set
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID? = null
+    val id: UUID = UUID.randomUUID()
+
+    fun updateInfo(name: String, type: String, address: String) {
+        this.name = name
+        this.type = CompanyType.valueOf(type)
+        this.address = address
+    }
+
+    fun markAsDelete() {
+        this.isDelete = true
+        this.isPublic = false
+        this.deletedAt = LocalDateTime.now()
+    }
 
 }
