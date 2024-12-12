@@ -1,6 +1,6 @@
 package com.sparta.deliveryroute.domain.model;
 
-import com.sparta.deliveryroute.domain.exception.deliveryRoute.IncorrectDeliveryTypeException;
+import com.sparta.deliveryroute.application.exception.deliveryRoute.IncorrectDeliveryTypeException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

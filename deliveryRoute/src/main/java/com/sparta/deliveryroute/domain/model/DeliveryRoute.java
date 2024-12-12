@@ -45,8 +45,10 @@ public class DeliveryRoute {
 	@Enumerated(EnumType.STRING)
 	DeliveryStatus status = WAITING;
 
-	private DeliveryRoute(UUID deliveryId, UUID hubRouteId,
-	                      Integer sequence, Integer actualDistance,
+	private DeliveryRoute(UUID deliveryId,
+	                      UUID hubRouteId,
+	                      Integer sequence,
+	                      Integer actualDistance,
 	                      Integer actualTime) {
 		this.deliveryId = deliveryId;
 		this.hubRouteId = hubRouteId;

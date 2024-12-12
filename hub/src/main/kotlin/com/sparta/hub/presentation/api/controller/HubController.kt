@@ -1,7 +1,7 @@
 package com.sparta.hub.presentation.api.controller
 
 import com.sparta.hub.application.dto.RouteResult
-import com.sparta.hub.domain.service.HubService
+import com.sparta.hub.application.service.HubService
 import com.sparta.hub.presentation.api.controller.docs.HubControllerDocs
 import com.sparta.hub.presentation.api.request.HubRequest
 import com.sparta.hub.presentation.api.request.HubSearchRequest
@@ -48,8 +48,19 @@ class HubController(
             hubService.navigateHubRoutes()
         )
 
-    @GetMapping("/routes")
-    override fun getHubRoutes(
+    @GetMapping("/routes/id")
+    override fun findHubRoutesById(
+        @RequestParam startHubId: UUID,
+        @RequestParam endHubId: UUID
+    ): Response<RouteResult> =
+        Response(
+            HttpStatus.OK.value(),
+            HttpStatus.OK.reasonPhrase,
+            hubService.getOptimalHubRoutes(startHubId, endHubId)
+        )
+
+    @GetMapping("/routes/name")
+    override fun findHubRoutesByName(
         @RequestParam startHubName: String,
         @RequestParam endHubName: String
     ): Response<RouteResult> =
@@ -94,5 +105,10 @@ class HubController(
     @GetMapping("/company/{hubId}")
     fun existHub(
         @PathVariable hubId: UUID
-    ): Boolean = hubService.existHub(hubId)
+    ): Response<Boolean> =
+        Response(
+            HttpStatus.OK.value(),
+            HttpStatus.OK.reasonPhrase,
+            hubService.existHub(hubId)
+        )
 }

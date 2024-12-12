@@ -95,7 +95,7 @@ resilience4j:
         wait-duration:
           seconds: 1
         retry-exceptions:
-          - com.sparta.company.domain.exception.FeignException
+          - com.sparta.company.application.exception.FeignException
         ignore-exceptions:
           - jakarta.ws.rs.InternalServerErrorException
 

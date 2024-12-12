@@ -84,8 +84,34 @@ abstract class HubControllerDocs {
             )
         ]
     )
-    @GetMapping("/hubs/routes")
-    abstract fun getHubRoutes(
+    @GetMapping("/hubs/routes/id")
+    abstract fun findHubRoutesById(
+        @RequestParam startHubId: UUID,
+        @RequestParam endHubId: UUID
+    ): Response<RouteResult>
+
+    @Operation(summary = "특정 허브 간 경로 탐색", description = "전달받은 허브 간 경로를 탐색하여 결과를 등록하는 API 입니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "201",
+                description = "경로 탐색 성공",
+                content = [Content(schema = Schema(implementation = Response::class))]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "경로를 계산할 수 없습니다.",
+                content = [Content(schema = Schema(implementation = Response::class))]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "허브를 찾을 수 없습니다.",
+                content = [Content(schema = Schema(implementation = Response::class))]
+            )
+        ]
+    )
+    @GetMapping("/hubs/routes/name")
+    abstract fun findHubRoutesByName(
         @RequestParam startHubName: String,
         @RequestParam endHubName: String
     ): Response<RouteResult>

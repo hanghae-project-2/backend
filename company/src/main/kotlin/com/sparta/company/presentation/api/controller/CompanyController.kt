@@ -1,6 +1,6 @@
 package com.sparta.company.presentation.api.controller
 
-import com.sparta.company.domain.service.CompanyService
+import com.sparta.company.application.service.CompanyService
 import com.sparta.company.presentation.api.controller.docs.CompanyControllerDocs
 import com.sparta.company.presentation.api.request.BaseCompanyRequest
 import com.sparta.company.presentation.api.request.CompanySearchRequest

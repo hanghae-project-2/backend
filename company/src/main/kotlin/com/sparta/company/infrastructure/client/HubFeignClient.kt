@@ -1,6 +1,7 @@
 package com.sparta.company.infrastructure.client
 
 import com.sparta.company.domain.client.HubClient
+import com.sparta.company.presentation.api.response.Response
 import io.github.resilience4j.retry.annotation.Retry
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,7 +18,7 @@ interface HubFeignClient : HubClient {
     @GetMapping("/hubs/company/{hubId}")
     override fun existHub(
         @PathVariable hubId: UUID
-    ): Boolean
+    ): Response<Boolean>
 
 }
 

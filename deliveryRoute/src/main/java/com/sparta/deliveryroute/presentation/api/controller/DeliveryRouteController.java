@@ -1,6 +1,6 @@
 package com.sparta.deliveryroute.presentation.api.controller;
 
-import com.sparta.deliveryroute.domain.service.DeliveryRouteService;
+import com.sparta.deliveryroute.application.service.DeliveryRouteService;
 import com.sparta.deliveryroute.presentation.api.controller.docs.DeliveryRouteControllerDocs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
