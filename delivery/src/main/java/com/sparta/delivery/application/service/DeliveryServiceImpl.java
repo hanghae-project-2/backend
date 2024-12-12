@@ -1,7 +1,8 @@
 package com.sparta.delivery.application.service;
 
-import com.sparta.delivery.application.dto.DelieveryList;
-import com.sparta.delivery.application.dto.DeliveryDetail;
+import com.sparta.delivery.application.dto.request.DeliverySearchRequestDto;
+import com.sparta.delivery.application.dto.response.DeliveryListResponseDto;
+import com.sparta.delivery.application.dto.response.DeliveryDetailResponseDto;
 import com.sparta.delivery.domain.exception.DeliveryException;
 import com.sparta.delivery.domain.exception.Error;
 import com.sparta.delivery.domain.model.Delivery;
@@ -9,6 +10,8 @@ import com.sparta.delivery.domain.model.DeliveryStatus;
 import com.sparta.delivery.domain.repository.DeliveryRepository;
 import com.sparta.delivery.domain.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +25,14 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final DeliveryRepository deliveryRepository;
 
     @Override
-    public DeliveryDetail getDeliveryById(UUID deliveryId) {
+    @Transactional(readOnly = true)
+    public DeliveryDetailResponseDto getDeliveryById(UUID deliveryId) {
 
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
 
-        return DeliveryDetail.fromEntity(delivery);
+        return DeliveryDetailResponseDto.fromEntity(delivery);
     }
 
     @Override
@@ -60,8 +64,11 @@ public class DeliveryServiceImpl implements DeliveryService {
         return deliveryId;
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<DelieveryList> getDeliveryList() {
-        return List.of();
+    public Page<DeliveryListResponseDto> getDeliveries(Pageable pageable, DeliverySearchRequestDto requestDto) {
+        return deliveryRepository.getDeliveries(pageable, requestDto);
     }
+
+
 }

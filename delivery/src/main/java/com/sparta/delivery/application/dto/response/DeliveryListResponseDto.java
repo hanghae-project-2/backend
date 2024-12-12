@@ -1,11 +1,11 @@
-package com.sparta.delivery.application.dto;
+package com.sparta.delivery.application.dto.response;
 
 import com.sparta.delivery.domain.model.DeliveryStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record DelieveryList(
+public record DeliveryListResponseDto(
         UUID deliveryId,
         UUID orderId,
         DeliveryStatus deliveryStatus,

@@ -1,5 +1,6 @@
 package com.sparta.order.domain.model;
 
+import com.sparta.order.application.dto.request.OrderCreateRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -43,4 +44,15 @@ public class Order extends AuditingFields {
     public void deleteOrder(UUID deletedBy) {
         super.delete(deletedBy);
     }
+
+    public static Order create(OrderCreateRequestDto request) {
+        return Order.builder()
+                .recipientCompanyId(request.recipientCompanyId())
+                .productId(request.productId())
+                .quantity(request.quantity())
+                .specialRequests(request.specialRequests())
+                .build();
+    }
+
+
 }

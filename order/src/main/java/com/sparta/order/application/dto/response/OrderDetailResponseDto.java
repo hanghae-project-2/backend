@@ -1,4 +1,4 @@
-package com.sparta.order.application.dto;
+package com.sparta.order.application.dto.response;
 
 import com.sparta.order.domain.model.OrderStatus;
 import lombok.Builder;
@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Builder
-public record OrderDetail(
+public record OrderDetailResponseDto(
         UUID orderId,
         UUID productId,
         UUID requestCompanyId,
