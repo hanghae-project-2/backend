@@ -1,7 +1,7 @@
 package com.sparta.hub.application.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.sparta.hub.presentation.api.response.HubRouteResponseDto
+import com.sparta.hub.application.dto.response.HubRouteResponseDto
 
 data class RouteResult(
     @JsonProperty("distance")

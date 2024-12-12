@@ -3,10 +3,15 @@ package com.sparta.hub.presentation.api.controller
 import com.sparta.hub.application.dto.RouteResult
 import com.sparta.hub.domain.service.HubService
 import com.sparta.hub.presentation.api.controller.docs.HubControllerDocs
-import com.sparta.hub.presentation.api.request.HubRequestDto
-import com.sparta.hub.presentation.api.response.HubDetailResponseDto
-import com.sparta.hub.presentation.api.response.HubResponseDto
+import com.sparta.hub.presentation.api.request.HubRequest
+import com.sparta.hub.presentation.api.request.HubSearchRequest
+import com.sparta.hub.presentation.api.request.toDto
+import com.sparta.hub.presentation.api.response.HubDetailResponse
+import com.sparta.hub.presentation.api.response.HubSummaryResponse
 import com.sparta.hub.presentation.api.response.Response
+import com.sparta.hub.presentation.api.response.toResponse
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -54,33 +59,36 @@ class HubController(
             hubService.getOptimalHubRoutes(startHubName, endHubName)
         )
 
-    @GetMapping
-    override fun getHubs(): Response<List<HubResponseDto>> =
+    @GetMapping("/search")
+    override fun searchHubs(
+        pageable: Pageable,
+        hubSearchRequest: HubSearchRequest
+    ): Response<Page<HubSummaryResponse>> =
         Response(
             HttpStatus.OK.value(),
             HttpStatus.OK.reasonPhrase,
-            hubService.getHubs()
+            hubService.searchHubs(pageable, hubSearchRequest.toDto()).toResponse()
         )
 
     @GetMapping("/{hubId}")
     override fun getHubDetail(
         @PathVariable hubId: UUID
-    ): Response<HubDetailResponseDto> =
+    ): Response<HubDetailResponse> =
         Response(
             HttpStatus.OK.value(),
             HttpStatus.OK.reasonPhrase,
-            hubService.getHubDetail(hubId)
+            hubService.getHubDetail(hubId).toResponse()
         )
 
     @PatchMapping("/{hubId}")
     override fun modifyHub(
         @PathVariable hubId: UUID,
-        @RequestBody hubRequestDto: HubRequestDto
+        @RequestBody request: HubRequest
     ): Response<UUID> =
         Response(
             HttpStatus.OK.value(),
             HttpStatus.OK.reasonPhrase,
-            hubService.modifyHub(hubId, hubRequestDto)
+            hubService.modifyHub(hubId, request.toDto())
         )
 
     @GetMapping("/company/{hubId}")

@@ -1,9 +1,12 @@
 package com.sparta.hub.domain.service
 
 import com.sparta.hub.application.dto.RouteResult
-import com.sparta.hub.presentation.api.request.HubRequestDto
-import com.sparta.hub.presentation.api.response.HubDetailResponseDto
-import com.sparta.hub.presentation.api.response.HubResponseDto
+import com.sparta.hub.application.dto.request.HubRequestDto
+import com.sparta.hub.application.dto.request.HubSearchRequestDto
+import com.sparta.hub.application.dto.response.HubDetailResponseDto
+import com.sparta.hub.application.dto.response.HubSummaryResponseDto
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import java.util.*
 
 interface HubService {
@@ -14,7 +17,7 @@ interface HubService {
 
     fun getOptimalHubRoutes(startHubName: String, endHubName: String): RouteResult
 
-    fun getHubs(): List<HubResponseDto>
+    fun searchHubs(pageable: Pageable, requestDto: HubSearchRequestDto): Page<HubSummaryResponseDto>
 
     fun getHubDetail(hubId: UUID): HubDetailResponseDto
 
