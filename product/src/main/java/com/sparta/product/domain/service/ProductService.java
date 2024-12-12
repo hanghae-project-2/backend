@@ -1,6 +1,7 @@
 package com.sparta.product.domain.service;
 
 import com.sparta.product.application.dto.ProductCreate;
+import com.sparta.product.application.dto.ProductDelete;
 import com.sparta.product.domain.model.Product;
 import com.sparta.product.domain.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,11 @@ public class ProductService {
 
         return ProductCreate.Response.of(product);
 
+    }
+
+    public ProductDelete.Response deleteProduct(ProductDelete.Request productDelete) {
+
+        return null;
     }
 
 
