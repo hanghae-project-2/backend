@@ -35,7 +35,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(token)) {
             try {
-                if (jwtBlacklistService.isBlacklisted(token)) {
+                String tokenType = jwtUtil.getTokenType(token);
+                if (tokenType == null) {
+                    log.error("Token type is invalid or missing");
+                    response.setStatus(HttpStatus.BAD_REQUEST.value());
+                    response.getWriter().write("{\"message\":\"Invalid or missing token type\"}");
+                    return;
+                }
+
+                boolean isAccessToken = "access".equals(tokenType);
+                if (jwtBlacklistService.isBlacklisted(token, isAccessToken)) {
                     log.error("JWT token is blacklisted");
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.getWriter().write("{\"message\":\"Token is blacklisted\"}");
@@ -50,8 +59,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.getWriter().write("{\"message\":\"Token expired\"}");
                 return;
             } catch (JwtException e) {
-                log.error("유료하지 않은 JWT token: {}", e.getMessage());
+                log.error("유효하지 않은 JWT token: {}", e.getMessage());
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.getWriter().write("{\"message\":\"Invalid token\"}");
                 return;
             }
         }

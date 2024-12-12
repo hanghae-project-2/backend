@@ -52,9 +52,16 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않거나 만료된 토큰입니다.");
         }
 
+        // 토큰 타입 확인 (Access Token 또는 Refresh Token)
+        String tokenType = jwtUtil.getTokenType(token);
+        if (tokenType == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "토큰 타입이 확인되지 않았습니다.");
+        }
+
         long expiration = jwtUtil.getRemainingExpiration(token);
 
-        jwtBlacklistService.addToBlacklist(token, expiration);
+        boolean isAccessToken = "access".equals(tokenType);
+        jwtBlacklistService.addToBlacklist(token, expiration, isAccessToken);
     }
 
     public Boolean verifyUser(final String username) {

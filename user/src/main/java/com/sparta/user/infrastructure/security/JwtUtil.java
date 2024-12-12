@@ -41,6 +41,7 @@ public class JwtUtil {
     public AuthResponse createAccessToken(final User user) {
         String token = Jwts.builder()
                 .setSubject(user.getUsername())
+                .claim("tokenType", "access")
                 .claim("username", user.getUsername())
                 .claim("role", user.getRole())
                 .setIssuer(issuer)
@@ -55,6 +56,7 @@ public class JwtUtil {
     public String createRefreshToken(String username) {
         return BEARER_PREFIX + Jwts.builder()
                 .setSubject(username)
+                .claim("tokenType", "refresh")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_TIME))
                 .signWith(key, signatureAlgorithm)
@@ -100,4 +102,19 @@ public class JwtUtil {
         }
         return null;
     }
+
+    public String getTokenType(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return claims.get("tokenType", String.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }
