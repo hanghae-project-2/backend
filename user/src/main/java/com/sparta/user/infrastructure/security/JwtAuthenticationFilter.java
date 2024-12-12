@@ -32,6 +32,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
+            String requestUri = request.getRequestURI();
+
+            if (isExcludedUri(requestUri)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String token = getTokenFromHeader(request);
 
             if (token == null || !jwtUtil.validateToken(token)) {
@@ -91,6 +98,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setStatus(status.value());
         response.setContentType("application/json; charset=UTF-8");
         response.getWriter().write(String.format("{\"code\":%d, \"message\":\"%s\"}", status.value(), message));
+    }
+
+    private boolean isExcludedUri(String uri) {
+        return uri.startsWith("/users/signIn") || uri.startsWith("/users/signUp");
     }
 
 }
