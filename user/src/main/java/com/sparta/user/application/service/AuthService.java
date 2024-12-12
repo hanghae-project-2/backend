@@ -28,6 +28,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse signIn(SignInRequest request) {
+
         String username = request.getUsername();
 
         authenticationManager.authenticate(
@@ -38,6 +39,10 @@ public class AuthService {
                 .filter(userInfo -> passwordEncoder.matches(request.getPassword(), userInfo.getPassword()))
                 .orElseThrow(() -> new IllegalArgumentException("Username을 찾을 수 없습니다."));
 
+        if (user.getIsDelete()) {
+            throw new CustomException("삭제된 계정입니다.", HttpStatus.FORBIDDEN);
+        }
+
         if (!user.getIsApproved()) {
             throw new CustomException("승인되지 않은 계정입니다.", HttpStatus.FORBIDDEN);
         }
@@ -46,13 +51,13 @@ public class AuthService {
     }
 
     public void logout(HttpServletRequest request) {
+
         String token = jwtUtil.getTokenFromHeader("Authorization", request);
 
         if (token == null || !jwtUtil.validateToken(token)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않거나 만료된 토큰입니다.");
         }
 
-        // 토큰 타입 확인 (Access Token 또는 Refresh Token)
         String tokenType = jwtUtil.getTokenType(token);
         if (tokenType == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "토큰 타입이 확인되지 않았습니다.");

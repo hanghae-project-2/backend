@@ -54,6 +54,16 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updateAt = LocalDateTime.now();
+    }
+
     private User(String username, String password, String slackId, UserRole role, Boolean isApproved, Boolean isDelete, String createdBy) {
         this.username = username;
         this.password = password;
@@ -69,13 +79,10 @@ public class User {
         return new User(username, password, slackId, role, false, false, createdBy);
     }
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
+    public void approve(UserRole role) {
+        this.isApproved = true;
+        this.role = role;
         this.updateAt = LocalDateTime.now();
     }
+
 }
