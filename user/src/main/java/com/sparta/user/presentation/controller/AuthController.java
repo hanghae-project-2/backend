@@ -21,13 +21,13 @@ public class AuthController {
     @PostMapping("/signIn")
     public Response<AuthResponse> signIn(final @RequestBody SignInRequest request) {
         final AuthResponse response = authService.signIn(request);
-        return new Response<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase(), response);
+        return new Response<>(HttpStatus.CREATED.value(), HttpStatus.OK.getReasonPhrase(), response);
     }
 
     @PostMapping("/signOut")
     public Response<String> logout(HttpServletRequest request) {
         authService.logout(request);
-        return new Response<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase(), "로그아웃 성공.");
+        return new Response<>(HttpStatus.CREATED.value(), HttpStatus.OK.getReasonPhrase(), "로그아웃 성공.");
     }
 
     @PostMapping("/signUp")
@@ -39,7 +39,7 @@ public class AuthController {
     @GetMapping("/verify")
     public Response<Boolean> verifyUser(final @RequestParam(value = "username") String username) {
         Boolean response = authService.verifyUser(username);
-        return new Response<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase(), response);
+        return new Response<>(HttpStatus.CREATED.value(), HttpStatus.OK.getReasonPhrase(), response);
     }
 }
 

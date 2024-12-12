@@ -72,14 +72,13 @@ public class AuthService {
             throw new CustomException("중복된 SlackId", HttpStatus.BAD_REQUEST);
         }
 
-        User user = User.builder()
-                .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .slackId(request.getSlackId())
-                .isApproved(false)
-                .isDelete(false)
-                .createdBy(request.getUsername())
-                .build();
+        User user = User.create(
+                request.getUsername(),
+                passwordEncoder.encode(request.getPassword()),
+                request.getSlackId(),
+                null,
+                request.getUsername()
+        );
 
         userRepository.save(user);
     }

@@ -9,10 +9,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "users")
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false, nullable = false)
@@ -55,6 +54,21 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    private User(String username, String password, String slackId, UserRole role, Boolean isApproved, Boolean isDelete, String createdBy) {
+        this.username = username;
+        this.password = password;
+        this.slackId = slackId;
+        this.role = role;
+        this.isApproved = isApproved;
+        this.isDelete = isDelete;
+        this.createdBy = createdBy;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public static User create(String username, String password, String slackId, UserRole role, String createdBy) {
+        return new User(username, password, slackId, role, false, false, createdBy);
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -64,5 +78,4 @@ public class User {
     protected void onUpdate() {
         this.updateAt = LocalDateTime.now();
     }
-
 }
