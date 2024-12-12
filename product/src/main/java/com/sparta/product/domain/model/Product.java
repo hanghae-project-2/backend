@@ -12,7 +12,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "products")
-public class Product extends AuditingFields{
+public class Product extends BaseEntity {
 
     @Id
     @GeneratedValue
@@ -29,7 +29,7 @@ public class Product extends AuditingFields{
     @Column(name = "amount", nullable = false)
     private Integer amount;
 
-    public Product(String name, UUID companyId, Integer amount) {
+    private Product(String name, UUID companyId, Integer amount) {
         this.name = name;
         this.companyId = companyId;
         this.amount = amount;
@@ -37,6 +37,17 @@ public class Product extends AuditingFields{
 
     public static Product createProduct(String name, UUID companyId, Integer amount) {
         return new Product(name,companyId,amount);
+    }
+
+    private Product(UUID id, String name, UUID companyId, Integer amount) {
+        this.id = id;
+        this.name = name;
+        this.companyId = companyId;
+        this.amount = amount;
+    }
+
+    public static Product updateProduct(UUID id, String name, UUID companyId, Integer amount) {
+        return new Product(id,name,companyId,amount);
     }
 
     public void deleteProduct(UUID deletedBy) {
