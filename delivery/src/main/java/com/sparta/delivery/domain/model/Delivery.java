@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @Table(name = "p_deliveries")
-public class Delivery extends AuditingFields{
+public class Delivery extends BaseEntity {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)

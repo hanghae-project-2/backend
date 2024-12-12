@@ -1,4 +1,4 @@
-package com.sparta.delivery.domain.model;
+package com.sparta.order.domain.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +17,7 @@ import java.util.UUID;
 @MappedSuperclass
 @Getter
 @EntityListeners(value = {AuditingEntityListener.class})
-public abstract class AuditingFields {
+public abstract class BaseEntity {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -63,6 +63,6 @@ public abstract class AuditingFields {
         this.deletedBy = deletedBy;
     }
 
-    public AuditingFields() {
+    public BaseEntity() {
     }
 }
