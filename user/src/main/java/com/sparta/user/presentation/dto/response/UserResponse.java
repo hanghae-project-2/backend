@@ -8,15 +8,15 @@ import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
-public class UserDetailResponse {
+public class UserResponse {
     private UUID id;
     private String username;
     private String slackId;
     private String role;
     private Boolean isApproved;
 
-    public static UserDetailResponse from(User user) {
-        return new UserDetailResponse(
+    public static UserResponse from(User user) {
+        return new UserResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getSlackId(),
