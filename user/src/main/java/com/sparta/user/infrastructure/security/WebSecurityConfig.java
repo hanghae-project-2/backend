@@ -1,6 +1,5 @@
-package com.sparta.user.config;
+package com.sparta.user.infrastructure.security;
 
-import com.sparta.user.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,8 +43,7 @@ public class WebSecurityConfig {
 
         http.authorizeHttpRequests((authorizeHttpRequests) ->
                 authorizeHttpRequests
-                        .requestMatchers("/users/signUp").permitAll()
-                        .requestMatchers("/users/signIn").permitAll()
+                        .requestMatchers("/users/signUp", "/users/signIn").permitAll()
                         .anyRequest().authenticated()
         );
 

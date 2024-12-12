@@ -1,6 +1,6 @@
-package com.sparta.user.security;
+package com.sparta.user.infrastructure.security;
 
-import com.sparta.user.application.dtos.AuthResponse;
+import com.sparta.user.presentation.dto.response.AuthResponse;
 import com.sparta.user.domain.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -69,7 +69,7 @@ public class JwtUtil {
                     .parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
-            log.error("Invalid JWT token: {}", e.getMessage());
+            log.error("유효하지 않은 JWT token: {}", e.getMessage());
         }
         return false;
     }
@@ -82,7 +82,7 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (JwtException e) {
-            log.error("Invalid JWT token: {}", e.getMessage());
+            log.error("유효하지 않은 JWT token: {}", e.getMessage());
             throw e;
         }
     }

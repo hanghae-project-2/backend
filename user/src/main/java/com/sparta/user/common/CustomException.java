@@ -1,4 +1,4 @@
-package com.sparta.user.config;
+package com.sparta.user.common;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

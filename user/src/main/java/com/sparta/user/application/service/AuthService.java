@@ -1,12 +1,12 @@
-package com.sparta.user.application;
+package com.sparta.user.application.service;
 
-import com.sparta.user.application.dtos.AuthResponse;
-import com.sparta.user.application.dtos.SignInRequest;
-import com.sparta.user.application.dtos.SignUpRequest;
-import com.sparta.user.config.CustomException;
+import com.sparta.user.presentation.dto.response.AuthResponse;
+import com.sparta.user.presentation.dto.request.SignInRequest;
+import com.sparta.user.presentation.dto.request.SignUpRequest;
+import com.sparta.user.common.CustomException;
 import com.sparta.user.domain.User;
 import com.sparta.user.domain.UserRepository;
-import com.sparta.user.security.JwtUtil;
+import com.sparta.user.infrastructure.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,7 +36,7 @@ public class AuthService {
 
         User user = userRepository.findByUsername(username)
                 .filter(userInfo -> passwordEncoder.matches(request.getPassword(), userInfo.getPassword()))
-                .orElseThrow(() -> new IllegalArgumentException("Username not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Username을 찾을 수 없습니다."));
 
         if (!user.getIsApproved()) {
             throw new CustomException("승인되지 않은 계정입니다.", HttpStatus.FORBIDDEN);
@@ -49,7 +49,7 @@ public class AuthService {
         String token = jwtUtil.getTokenFromHeader("Authorization", request);
 
         if (token == null || !jwtUtil.validateToken(token)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않거나 만료된 토큰입니다.");
         }
 
         long expiration = jwtUtil.getRemainingExpiration(token);
@@ -63,13 +63,24 @@ public class AuthService {
 
     @Transactional
     public void createUser(final SignUpRequest request) {
-        userRepository.save(User.builder()
+
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new CustomException("중복된 Username", HttpStatus.BAD_REQUEST);
+        }
+
+        if (userRepository.findBySlackId(request.getSlackId()).isPresent()) {
+            throw new CustomException("중복된 SlackId", HttpStatus.BAD_REQUEST);
+        }
+
+        User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .slackId(request.getSlackId())
                 .isApproved(false)
                 .isDelete(false)
                 .createdBy(request.getUsername())
-                .build());
+                .build();
+
+        userRepository.save(user);
     }
 }

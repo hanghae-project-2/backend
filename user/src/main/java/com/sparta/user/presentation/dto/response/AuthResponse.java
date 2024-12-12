@@ -1,4 +1,4 @@
-package com.sparta.user.application.dtos;
+package com.sparta.user.presentation.dto.response;
 
 import lombok.*;
 

@@ -1,6 +1,6 @@
-package com.sparta.user.security;
+package com.sparta.user.infrastructure.security;
 
-import com.sparta.user.application.JwtBlacklistService;
+import com.sparta.user.application.service.JwtBlacklistService;
 import io.jsonwebtoken.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,7 +21,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j(topic = "JWT 인증 필터")
+@Slf4j(topic = "JWT 인증 필터 관련 로그")
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
@@ -35,7 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(token)) {
             try {
-                // 블랙리스트 확인
                 if (jwtBlacklistService.isBlacklisted(token)) {
                     log.error("JWT token is blacklisted");
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
@@ -46,12 +45,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Claims claims = jwtUtil.validateAndGetClaims(token);
                 setAuthentication(claims.getSubject());
             } catch (ExpiredJwtException e) {
-                log.error("Expired JWT token");
+                log.error("만료된 JWT token");
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.getWriter().write("{\"message\":\"Token expired\"}");
                 return;
             } catch (JwtException e) {
-                log.error("Invalid JWT token: {}", e.getMessage());
+                log.error("유료하지 않은 JWT token: {}", e.getMessage());
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 return;
             }
@@ -75,4 +74,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         log.info("Authentication set for user: {}", username);
     }
+
 }
