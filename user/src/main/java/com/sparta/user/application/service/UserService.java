@@ -67,9 +67,21 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
+    public void updateUserRole(UUID id, UserRole newRole, String updatedBy) {
+        User user = findUserById(id);
+
+        if (UserRole.MASTER.equals(user.getRole())) {
+            throw new CustomException("MASTER 권한은 수정할 수 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        user.updateRole(newRole, updatedBy);
+
+        userRepository.save(user);
+    }
+
     public User findUserById(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다. ID: " + id, HttpStatus.NOT_FOUND));
     }
-
 }

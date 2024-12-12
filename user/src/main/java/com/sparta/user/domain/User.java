@@ -97,4 +97,10 @@ public class User {
         this.updateBy = updatedBy;
         this.updateAt = LocalDateTime.now();
     }
+
+    public void updateRole(UserRole newRole, String updatedBy) {
+        this.role = newRole;
+        this.updateBy = updatedBy;
+        this.updateAt = LocalDateTime.now();
+    }
 }

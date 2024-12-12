@@ -5,9 +5,11 @@ import com.sparta.user.common.CustomException;
 import com.sparta.user.domain.UserRole;
 import com.sparta.user.infrastructure.security.CustomUserDetailsImpl;
 import com.sparta.user.presentation.dto.request.UpdateUserRequest;
+import com.sparta.user.presentation.dto.request.UpdateUserRoleRequest;
 import com.sparta.user.presentation.dto.request.UserApprovalRequest;
 import com.sparta.user.presentation.dto.response.UserResponse;
 import com.sparta.user.presentation.response.Response;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -87,6 +89,28 @@ public class UserController {
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 "회원 정보 수정 성공."
+        );
+    }
+
+    @PatchMapping("/{id}/role")
+    @Secured(UserRole.Authority.MASTER)
+    public Response<String> updateUserRole(
+            @PathVariable UUID id,
+            @RequestBody @Valid UpdateUserRoleRequest request,
+            @AuthenticationPrincipal CustomUserDetailsImpl userDetails) {
+
+        if (!UserRole.MASTER.equals(userDetails.getRole())) {
+            throw new CustomException("MASTER 권한이 있어야 이 작업을 수행할 수 있습니다.", HttpStatus.FORBIDDEN);
+        }
+
+        String updatedBy = userDetails.getUsername();
+
+        userService.updateUserRole(id, request.getRole(), updatedBy);
+
+        return new Response<>(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                "권한 수정 성공."
         );
     }
 }
