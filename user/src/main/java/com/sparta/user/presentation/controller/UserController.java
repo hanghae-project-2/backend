@@ -1,8 +1,10 @@
 package com.sparta.user.presentation.controller;
 
 import com.sparta.user.application.service.UserService;
+import com.sparta.user.common.CustomException;
 import com.sparta.user.domain.UserRole;
 import com.sparta.user.infrastructure.security.CustomUserDetailsImpl;
+import com.sparta.user.presentation.dto.request.UpdateUserRequest;
 import com.sparta.user.presentation.dto.request.UserApprovalRequest;
 import com.sparta.user.presentation.dto.response.UserResponse;
 import com.sparta.user.presentation.response.Response;
@@ -63,7 +65,28 @@ public class UserController {
         return new Response<>(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
-                null
+                "승인 및 권한이 부여되었습니다."
+        );
+    }
+
+    @PatchMapping("/{id}")
+    public Response<String> updateUser(
+            @PathVariable UUID id,
+            @RequestBody UpdateUserRequest request,
+            @AuthenticationPrincipal CustomUserDetailsImpl userDetails) {
+
+        if (!id.equals(userDetails.getId()) && !UserRole.MASTER.equals(userDetails.getRole())) {
+            throw new CustomException("자신의 정보 또는 MASTER 권한만 수정할 수 있습니다.", HttpStatus.FORBIDDEN);
+        }
+
+        String updatedBy = userDetails.getUsername();
+
+        userService.updateUser(id, request, updatedBy);
+
+        return new Response<>(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                "회원 정보 수정 성공."
         );
     }
 }

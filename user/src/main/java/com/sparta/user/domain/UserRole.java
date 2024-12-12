@@ -9,7 +9,6 @@ public enum UserRole {
     DELIVERY_PERSON(Authority.DELIVERY_PERSON),
     COMPANY_ADMIN(Authority.COMPANY_ADMIN);
 
-
     private final String authority;
 
     UserRole(String authority) {

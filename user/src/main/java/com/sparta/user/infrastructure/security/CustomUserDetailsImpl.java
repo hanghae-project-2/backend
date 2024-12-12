@@ -8,8 +8,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.UUID;
 
 public record CustomUserDetailsImpl(User user) implements UserDetails {
+
+    public UUID getId() {
+        return user.getId();
+    }
+
+    public UserRole getRole() {
+        return user.getRole();
+    }
 
     @Override
     public String getPassword() {
@@ -32,6 +41,8 @@ public record CustomUserDetailsImpl(User user) implements UserDetails {
         authorities.add(simpleGrantedAuthority);
 
         return authorities;
+
+//        return List.of(new SimpleGrantedAuthority(user.getRole().getAuthority()));
     }
 
     @Override

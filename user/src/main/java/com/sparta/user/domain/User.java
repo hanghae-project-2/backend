@@ -86,4 +86,15 @@ public class User {
         this.updateAt = LocalDateTime.now();
     }
 
+    public void updatePassword(String newPassword, String updatedBy) {
+        this.password = newPassword;
+        this.updateBy = updatedBy;
+        this.updateAt = LocalDateTime.now();
+    }
+
+    public void updateSlackId(String newSlackId, String updatedBy) {
+        this.slackId = newSlackId;
+        this.updateBy = updatedBy;
+        this.updateAt = LocalDateTime.now();
+    }
 }
