@@ -6,18 +6,18 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public class Response<T> {
+public class ApiResponse<T> {
 
     private Integer code;
     private String message;
     private T data;
 
-    public Response() {
+    public ApiResponse() {
         this.code = HttpStatus.OK.value();
         this.message = HttpStatus.OK.getReasonPhrase();
     }
 
-    public Response(Integer code, String message) {
+    public ApiResponse(Integer code, String message) {
         this.code = code;
         this.message = message;
     }

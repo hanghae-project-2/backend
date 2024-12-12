@@ -2,6 +2,8 @@ package com.sparta.product.domain.service;
 
 import com.sparta.product.application.dto.ProductCreate;
 import com.sparta.product.application.dto.ProductDelete;
+import com.sparta.product.application.dto.ProductRead;
+import com.sparta.product.domain.exception.ProductNullPointerException;
 import com.sparta.product.domain.model.Product;
 import com.sparta.product.domain.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,11 @@ public class ProductService {
         return null;
     }
 
+    public ProductRead.Response getProduct(ProductRead.Request productRead) {
+        return ProductRead.Response.of(productRepository
+                .findById(productRead.productId())
+                .orElseThrow(ProductNullPointerException::new));
+    }
 
 
 }
