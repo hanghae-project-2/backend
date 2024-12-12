@@ -31,42 +31,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String token = getTokenFromHeader(request);
+        try {
+            String token = getTokenFromHeader(request);
 
-        if (StringUtils.hasText(token)) {
-            try {
+            if (token == null || !jwtUtil.validateToken(token)) {
+                handleError(response, HttpStatus.UNAUTHORIZED, "유효하지 않거나 누락된 토큰입니다.");
+                return;
+            }
+
+            if (StringUtils.hasText(token)) {
+
                 String tokenType = jwtUtil.getTokenType(token);
                 if (tokenType == null) {
-                    log.error("Token type is invalid or missing");
-                    response.setStatus(HttpStatus.BAD_REQUEST.value());
-                    response.getWriter().write("{\"message\":\"Invalid or missing token type\"}");
+                    handleError(response, HttpStatus.BAD_REQUEST, "Invalid or missing token type");
                     return;
                 }
 
                 boolean isAccessToken = "access".equals(tokenType);
                 if (jwtBlacklistService.isBlacklisted(token, isAccessToken)) {
-                    log.error("JWT token is blacklisted");
-                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    response.getWriter().write("{\"message\":\"Token is blacklisted\"}");
+                    handleError(response, HttpStatus.UNAUTHORIZED, "Token is blacklisted");
                     return;
                 }
 
                 Claims claims = jwtUtil.validateAndGetClaims(token);
                 setAuthentication(claims.getSubject());
-            } catch (ExpiredJwtException e) {
-                log.error("만료된 JWT token");
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.getWriter().write("{\"message\":\"Token expired\"}");
-                return;
-            } catch (JwtException e) {
-                log.error("유효하지 않은 JWT token: {}", e.getMessage());
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.getWriter().write("{\"message\":\"Invalid token\"}");
-                return;
             }
-        }
 
-        filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);
+
+        } catch (ExpiredJwtException e) {
+            log.error("만료된 JWT token", e);
+            handleError(response, HttpStatus.UNAUTHORIZED, "만료된 Token");
+        } catch (JwtException e) {
+            log.error("유효하지 않은 JWT token: {}", e.getMessage());
+            handleError(response, HttpStatus.UNAUTHORIZED, "유효하지 않은 token");
+        } catch (Exception e) {
+            log.error("예기치 않은 오류가 발생했습니다.", e);
+            handleError(response, HttpStatus.INTERNAL_SERVER_ERROR, "예기치 않은 오류가 발생했습니다.");
+        }
     }
 
     private String getTokenFromHeader(HttpServletRequest request) {
@@ -83,6 +85,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         log.info("Authentication set for user: {}", username);
+    }
+
+    private void handleError(HttpServletResponse response, HttpStatus status, String message) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType("application/json; charset=UTF-8");
+        response.getWriter().write(String.format("{\"code\":%d, \"message\":\"%s\"}", status.value(), message));
     }
 
 }
