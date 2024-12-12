@@ -5,18 +5,22 @@ import com.sparta.user.domain.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
+import java.time.Duration;
+import java.util.*;
 
 @Slf4j(topic = "JWT 관련 로그")
 @Component
+@RequiredArgsConstructor
 public class JwtUtil {
+    private final RedisTemplate<String, Object> redisTemplate;
     private static final String BEARER_PREFIX = "Bearer ";
     private static final long REFRESH_TOKEN_TIME = 14 * 24 * 60 * 60 * 1000L; // 14 days
 
@@ -50,17 +54,27 @@ public class JwtUtil {
                 .signWith(key, signatureAlgorithm)
                 .compact();
 
+        // Redis에 AccessToken 저장
+        String redisKey = "token:" + user.getUsername() + ":access";
+        redisTemplate.opsForValue().set(redisKey, token, Duration.ofMillis(accessExpiration));
+
         return AuthResponse.of(BEARER_PREFIX + token);
     }
 
     public String createRefreshToken(String username) {
-        return BEARER_PREFIX + Jwts.builder()
+        String token = Jwts.builder()
                 .setSubject(username)
                 .claim("tokenType", "refresh")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_TIME))
                 .signWith(key, signatureAlgorithm)
                 .compact();
+
+        // Redis에 RefreshToken 저장
+        String redisKey = "token:" + username + ":refresh";
+        redisTemplate.opsForValue().set(redisKey, token, Duration.ofMillis(REFRESH_TOKEN_TIME));
+
+        return BEARER_PREFIX + token;
     }
 
     public boolean validateToken(String token) {
@@ -117,4 +131,11 @@ public class JwtUtil {
         }
     }
 
+    public List<String> getAllActiveTokens(String username) {
+        Set<String> keys = redisTemplate.keys("token:" + username + ":*");
+        if (keys == null || keys.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(keys);
+    }
 }

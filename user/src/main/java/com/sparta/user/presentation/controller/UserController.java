@@ -60,9 +60,7 @@ public class UserController {
             @RequestBody UserApprovalRequest request,
             @AuthenticationPrincipal CustomUserDetailsImpl userDetails) {
 
-        String updatedBy = userDetails.getUsername();
-
-        userService.approveUser(userId, request.getRole(), updatedBy);
+        userService.approveUser(userId, request.getRole(), userDetails.getUsername());
 
         return new Response<>(
                 HttpStatus.OK.value(),
@@ -81,9 +79,7 @@ public class UserController {
             throw new CustomException("자신의 정보 또는 MASTER 권한만 수정할 수 있습니다.", HttpStatus.FORBIDDEN);
         }
 
-        String updatedBy = userDetails.getUsername();
-
-        userService.updateUser(id, request, updatedBy);
+        userService.updateUser(id, request, userDetails.getUsername());
 
         return new Response<>(
                 HttpStatus.OK.value(),
@@ -103,14 +99,26 @@ public class UserController {
             throw new CustomException("MASTER 권한이 있어야 이 작업을 수행할 수 있습니다.", HttpStatus.FORBIDDEN);
         }
 
-        String updatedBy = userDetails.getUsername();
-
-        userService.updateUserRole(id, request.getRole(), updatedBy);
+        userService.updateUserRole(id, request.getRole(), userDetails.getUsername());
 
         return new Response<>(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
                 "권한 수정 성공."
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    public Response<String> deleteUser(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal CustomUserDetailsImpl userDetails) {
+
+        userService.deleteUser(id, userDetails.getUsername());
+
+        return new Response<>(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                "회원 삭제 성공."
         );
     }
 }

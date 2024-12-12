@@ -4,6 +4,7 @@ import com.sparta.user.common.CustomException;
 import com.sparta.user.domain.User;
 import com.sparta.user.domain.UserRepository;
 import com.sparta.user.domain.UserRole;
+import com.sparta.user.infrastructure.security.JwtUtil;
 import com.sparta.user.presentation.dto.request.UpdateUserRequest;
 import com.sparta.user.presentation.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
@@ -11,11 +12,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,6 +27,9 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtBlacklistService jwtBlacklistService;
+    private final JwtUtil jwtUtil;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional(readOnly = true)
     public UserResponse getUserById(UUID id) {
@@ -78,6 +84,28 @@ public class UserService {
         user.updateRole(newRole, updatedBy);
 
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(UUID id, String deletedBy) {
+        User user = findUserById(id);
+
+        if (user.getIsDelete()) {
+            throw new CustomException("이미 삭제된 사용자입니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        user.delete(deletedBy);
+        userRepository.save(user);
+
+        List<String> tokens = jwtUtil.getAllActiveTokens(user.getUsername());
+        for (String redisKey : tokens) {
+            String token = (String) redisTemplate.opsForValue().get(redisKey);
+            if (token != null && jwtUtil.validateToken(token)) {
+                String tokenType = jwtUtil.getTokenType(token);
+                boolean isAccessToken = "access".equals(tokenType);
+                jwtBlacklistService.addToBlacklist(token, jwtUtil.getRemainingExpiration(token), isAccessToken);
+            }
+        }
     }
 
     public User findUserById(UUID id) {

@@ -27,5 +27,4 @@ public class JwtBlacklistService {
     private String getKey(String token, boolean isAccessToken) {
         return (isAccessToken ? ACCESS_TOKEN_PREFIX : REFRESH_TOKEN_PREFIX) + token;
     }
-
 }

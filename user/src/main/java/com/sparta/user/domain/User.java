@@ -103,4 +103,11 @@ public class User {
         this.updateBy = updatedBy;
         this.updateAt = LocalDateTime.now();
     }
+
+    public void delete(String deletedBy) {
+        this.isApproved = false;
+        this.isDelete = true;
+        this.deleteBy = deletedBy;
+        this.deleteAt = LocalDateTime.now();
+    }
 }
