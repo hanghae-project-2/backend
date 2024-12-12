@@ -35,14 +35,14 @@ public class UserService {
     }
 
     @Transactional
-    public void approveUser(UUID id, UserRole role) {
+    public void approveUser(UUID id, UserRole role, String updatedBy) {
         User user = findUserById(id);
 
         if (user.getIsApproved()) {
             throw new CustomException("사용자가 이미 승인되었습니다.", HttpStatus.BAD_REQUEST);
         }
 
-        user.approve(role);
+        user.approve(role, updatedBy);
         userRepository.save(user);
     }
 

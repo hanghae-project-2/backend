@@ -2,6 +2,7 @@ package com.sparta.user.presentation.controller;
 
 import com.sparta.user.application.service.UserService;
 import com.sparta.user.domain.UserRole;
+import com.sparta.user.infrastructure.security.CustomUserDetailsImpl;
 import com.sparta.user.presentation.dto.request.UserApprovalRequest;
 import com.sparta.user.presentation.dto.response.UserResponse;
 import com.sparta.user.presentation.response.Response;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -51,9 +53,12 @@ public class UserController {
     @Secured(UserRole.Authority.MASTER)
     public Response<String> approveUser(
             @PathVariable UUID userId,
-            @RequestBody UserApprovalRequest request) {
+            @RequestBody UserApprovalRequest request,
+            @AuthenticationPrincipal CustomUserDetailsImpl userDetails) {
 
-        userService.approveUser(userId, request.getRole());
+        String updatedBy = userDetails.getUsername();
+
+        userService.approveUser(userId, request.getRole(), updatedBy);
 
         return new Response<>(
                 HttpStatus.OK.value(),

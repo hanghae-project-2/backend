@@ -79,9 +79,10 @@ public class User {
         return new User(username, password, slackId, role, false, false, createdBy);
     }
 
-    public void approve(UserRole role) {
+    public void approve(UserRole role, String updatedBy) {
         this.isApproved = true;
         this.role = role;
+        this.updateBy = updatedBy;
         this.updateAt = LocalDateTime.now();
     }
 
