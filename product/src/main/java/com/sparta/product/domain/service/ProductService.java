@@ -9,6 +9,8 @@ import com.sparta.product.domain.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -33,9 +35,9 @@ public class ProductService {
         return null;
     }
 
-    public ProductRead.Response getProduct(ProductRead.Request productRead) {
+    public ProductRead.Response getProduct(UUID productId) {
         return ProductRead.Response.of(productRepository
-                .findById(productRead.productId())
+                .findById(productId)
                 .orElseThrow(ProductNullPointerException::new));
     }
 

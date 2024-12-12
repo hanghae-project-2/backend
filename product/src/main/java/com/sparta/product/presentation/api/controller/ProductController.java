@@ -31,8 +31,7 @@ public class ProductController {
 
     @GetMapping("/{productId}")
     public ApiResponse<ProductRead.Response> getProductById(@PathVariable UUID productId) {
-        ProductRead.Request productReadRequest = new ProductRead.Request(productId);
-        ProductRead.Response productReadResponse = productService.getProduct(productReadRequest);
+        ProductRead.Response productReadResponse = productService.getProduct(productId);
         return new ApiResponse<>(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), productReadResponse);
 
     }
