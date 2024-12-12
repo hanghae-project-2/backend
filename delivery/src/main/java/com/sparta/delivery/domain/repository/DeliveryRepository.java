@@ -15,4 +15,6 @@ public interface DeliveryRepository {
     Delivery save(Delivery delivery);
 
     Page<DeliveryListResponseDto> getDeliveries(Pageable pageable, DeliverySearchRequestDto requestDto);
+
+    Optional<Delivery> findByOrderIdAndIsDeleteFalse(UUID orderId);
 }

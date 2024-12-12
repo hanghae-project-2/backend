@@ -9,6 +9,7 @@ public record OrderCreateRequestDto(
         UUID recipientCompanyId,
         UUID productId,
         Integer quantity,
+        Integer price,
         String specialRequests) {
 
 }

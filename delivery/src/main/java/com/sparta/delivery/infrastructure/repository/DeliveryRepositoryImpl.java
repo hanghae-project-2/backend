@@ -31,4 +31,11 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
     public Page<DeliveryListResponseDto> getDeliveries(Pageable pageable, DeliverySearchRequestDto requestDto) {
         return null;
     }
+
+    @Override
+    public Optional<Delivery> findByOrderIdAndIsDeleteFalse(UUID orderId) {
+        return deliveryJpaRepository.findByOrderIdAndIsDeleteFalse(orderId);
+    }
+
+
 }

@@ -1,6 +1,7 @@
 package com.sparta.order.domain.model;
 
 import com.sparta.order.application.dto.request.OrderCreateRequestDto;
+import com.sparta.order.application.dto.request.OrderUpdateRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -55,4 +56,9 @@ public class Order extends BaseEntity {
     }
 
 
+    public void updateOrder(OrderUpdateRequestDto requestDto) {
+        this.status = requestDto.orderStatus();
+        this.quantity = requestDto.quantity();
+        this.specialRequests = requestDto.specialRequests();
+    }
 }

@@ -5,6 +5,7 @@ import com.sparta.order.application.dto.request.OrderSearchRequestDto;
 import com.sparta.order.application.dto.request.OrderUpdateRequestDto;
 import com.sparta.order.application.dto.response.*;
 import com.sparta.order.domain.client.CompanyClient;
+import com.sparta.order.domain.client.DeliveryClient;
 import com.sparta.order.domain.client.ProductClient;
 import com.sparta.order.domain.exception.Error;
 import com.sparta.order.domain.exception.OrderException;
@@ -29,32 +30,31 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final CompanyClient companyClient;
     private final ProductClient productClient;
+    private final DeliveryClient deliveryClient;
 
     //임시 변수 생성
-    UUID productId = UUID.randomUUID();
-    UUID recipientCompanyId = UUID.randomUUID();
-    String productName = "potato";
-    Integer productPrice = 100000;
-    UUID userId = UUID.randomUUID();
     UUID deliveryId = UUID.randomUUID();
-    UUID requestCompanyId = UUID.randomUUID();
-
 
     @Override
     public OrderResponseDto createOrder(OrderCreateRequestDto request) {
+
+        ProductResponseDto product = productClient.checkAmount(request.productId(), request.quantity());
+
         Order order = orderRepository.save(
             Order.builder()
-                    .productId(productId)
+                    .productId(product.productId())
                     .status(OrderStatus.RECEIVED)
-                    .totalPrice(productPrice* request.quantity())
+                    .totalPrice(request.price()* request.quantity())
                     .specialRequests(request.specialRequests())
                     .quantity(request.quantity())
-                    .price(productPrice)
-                    .recipientCompanyId(recipientCompanyId)
+                    .price(request.price())
+                    .recipientCompanyId(request.recipientCompanyId())
                     .build()
         );
 
+        //TODO : 배송담당자 조회 (Feign Client)
 
+        //TODO : create order 이벤트 발생?
 
         return OrderResponseDto.builder()
                 .deliveryId(deliveryId)
@@ -65,11 +65,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponseDto deleteOrder(UUID orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(
+        Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
 
+        //TODO : userID 로 바꾸기
         order.deleteOrder(orderId);
+
+        UUID deliveryId = deliveryClient.deleteDeliveryByOrderId(orderId);
+
 
         return OrderResponseDto.builder()
                 .orderId(order.getId())
@@ -80,26 +84,16 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     @Override
     public OrderDetailResponseDto getOrderById(UUID orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(
+        Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
 
-        return OrderDetailResponseDto.builder()
-                .orderId(orderId)
-                .productId(order.getProductId())
-                .requestCompanyId(requestCompanyId)
-                .recipientCompanyName("gamgamjashop")
-                .recipientCompanyId(order.getRecipientCompanyId())
-                .requestCompanyName("gamjashop")
-                .recipientCompanyId(order.getProductId())
-                .productName(productName)
-                .quantity(order.getQuantity())
-                .deliveryId(deliveryId)
-                .orderStatus(order.getStatus())
-                .specialRequests(order.getSpecialRequests())
-                .createdAt(order.getCreatedAt())
-                .updatedAt(order.getUpdatedAt())
-                .build();
+        CompanyResponseDto recipientCompany = companyClient.findCompanyById(order.getRecipientCompanyId());
+        ProductInfoResponseDto product = productClient.findProductById(order.getProductId());
+        CompanyResponseDto requestCompany = companyClient.findCompanyById(product.requestCompanyId());
+        UUID deliveryId = deliveryClient.getDeliveryByOrderId(orderId);
+
+        return OrderDetailResponseDto.from(order, recipientCompany,requestCompany ,product, deliveryId);
     }
 
     @Transactional(readOnly = true)
@@ -130,7 +124,19 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @Override
     public OrderResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto requestDto) {
-        return null;
+
+        Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
+                () -> new OrderException(Error.NOT_FOUND_ORDER)
+        );
+
+        UUID deliveryId = deliveryClient.getDeliveryByOrderId(orderId);
+
+        order.updateOrder(requestDto);
+
+        return OrderResponseDto.builder()
+                .orderId(order.getId())
+                .deliveryId(deliveryId)
+                .build();
     }
 
     private Page<Order> findOrders(OrderSearchRequestDto requestDto) {

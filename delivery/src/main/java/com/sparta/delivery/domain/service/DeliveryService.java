@@ -20,4 +20,8 @@ public interface DeliveryService {
     UUID deleteDelivery(UUID deliveryId);
 
     Page<DeliveryListResponseDto> getDeliveries(Pageable pageable, DeliverySearchRequestDto requestDto);
+
+    UUID getDeliveryByOrderId(UUID orderId);
+
+    UUID deleteDeliveryByOrderId(UUID orderId);
 }

@@ -1,13 +1,8 @@
-package com.sparta.delivery.application.dto.response;
-
-import com.sparta.delivery.domain.model.Delivery;
-import com.sparta.delivery.domain.model.DeliveryStatus;
-import lombok.Builder;
+package com.sparta.order.application.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Builder
 public record DeliveryListResponseDto(
         UUID deliveryId,
         UUID orderId,
@@ -21,5 +16,4 @@ public record DeliveryListResponseDto(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-
 }

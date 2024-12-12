@@ -39,7 +39,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Optional<Order> findById(UUID orderId) {
+    public Optional<Order> findByIdAndIsDeleteFalse(UUID orderId) {
         return orderJpaRepository.findById(orderId);
     }
 

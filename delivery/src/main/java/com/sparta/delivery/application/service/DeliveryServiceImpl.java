@@ -32,7 +32,8 @@ public class DeliveryServiceImpl implements DeliveryService {
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
 
-        return DeliveryDetailResponseDto.fromEntity(delivery);
+        return null;
+        //return DeliveryDetailResponseDto.fromEntity(delivery);
     }
 
     @Override
@@ -68,6 +69,27 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     public Page<DeliveryListResponseDto> getDeliveries(Pageable pageable, DeliverySearchRequestDto requestDto) {
         return deliveryRepository.getDeliveries(pageable, requestDto);
+    }
+
+    @Override
+    public UUID getDeliveryByOrderId(UUID orderId) {
+        Delivery delivery = deliveryRepository.findByOrderIdAndIsDeleteFalse(orderId).orElseThrow(
+                () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
+        );
+        return delivery.getId();
+    }
+
+    @Transactional
+    @Override
+    public UUID deleteDeliveryByOrderId(UUID orderId) {
+        Delivery delivery = deliveryRepository.findByOrderIdAndIsDeleteFalse(orderId).orElseThrow(
+                () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
+        );
+
+        //TODO : USERID 받으면 수정
+        delivery.deleteDelivery(orderId);
+
+        return delivery.getId();
     }
 
 

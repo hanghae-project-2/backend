@@ -1,5 +1,6 @@
 package com.sparta.order.domain.client;
 
+import com.sparta.order.application.dto.response.ProductInfoResponseDto;
 import com.sparta.order.application.dto.response.ProductResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,10 +14,12 @@ import java.util.UUID;
 @FeignClient(name="product-service")
 public interface ProductClient {
 
-    @PostMapping("/api/products/batch")
+    @PostMapping("/products/batch")
     List<ProductResponseDto> findProductsByIds(@RequestBody List<UUID> ids);
 
-    @GetMapping("/api/products/{productId}")
-    ProductResponseDto findProductById(@PathVariable("productId") UUID productId);
+    @GetMapping("/products/{productId}")
+    ProductInfoResponseDto findProductById(@PathVariable("productId") UUID productId);
 
+    @GetMapping("/products/{productId}/amount")
+    ProductResponseDto checkAmount(@PathVariable UUID productId, Integer quantity);
 }

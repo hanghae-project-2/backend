@@ -37,4 +37,11 @@ public abstract class DeliveryControllerDocs {
     @GetMapping("/deliveries")
     public abstract Response<Page<DeliveryListResponseDto>> getDeliveries(Pageable pageable, DeliverySearchRequestDto requestDto);
 
+    //임시 api 이름 api 규칙 질문할것
+    @GetMapping("/deliveries/orders/{orderId}")
+    public abstract UUID getDeliveryByOrderId(@PathVariable UUID orderId);
+
+    @DeleteMapping("/deliveries/orders/{orderId}")
+    public abstract UUID deleteDeliveryByOrderId(@PathVariable UUID orderId);
+
 }

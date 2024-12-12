@@ -48,10 +48,22 @@ public class DeliveryController extends DeliveryControllerDocs {
     }
 
     @Override
+    @GetMapping()
     public Response<Page<DeliveryListResponseDto>> getDeliveries(Pageable pageable, DeliverySearchRequestDto requestDto) {
         return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), deliveryService.getDeliveries(pageable, requestDto));
     }
 
+    @GetMapping("/orders/{orderId}")
+    @Override
+    public UUID getDeliveryByOrderId(@PathVariable UUID orderId) {
+        return deliveryService.getDeliveryByOrderId(orderId);
+    }
+
+    @DeleteMapping("/orders/{orderId}")
+    @Override
+    public UUID deleteDeliveryByOrderId(@PathVariable UUID orderId) {
+        return deliveryService.deleteDeliveryByOrderId(orderId);
+    }
 
 
 }
