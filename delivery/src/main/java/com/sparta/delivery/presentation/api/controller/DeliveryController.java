@@ -30,11 +30,6 @@ public class DeliveryController extends DeliveryControllerDocs {
         return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), deliveryService.getDeliveryById(deliveryId));
     }
 
-    @Override
-    @PostMapping("")
-    public Response<UUID> createDelivery(){
-        return new Response<>(HttpStatus.CREATED.value(),HttpStatus.CREATED.getReasonPhrase(),deliveryService.createDelivery());
-    }
 
     @Override
     @PatchMapping("/{deliveryId}")

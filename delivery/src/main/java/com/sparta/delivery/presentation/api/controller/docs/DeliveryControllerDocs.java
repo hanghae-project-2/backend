@@ -22,10 +22,6 @@ public abstract class DeliveryControllerDocs {
     @GetMapping("/deliveries/{deliveryId}")
     public abstract Response<DeliveryDetailResponseDto> getDeliveryById(@PathVariable UUID deliveryId);
 
-    @Operation(summary = "배송 생성", description = "배송 생성 API")
-    @PostMapping("/deliveries")
-    public abstract Response<UUID> createDelivery();
-
     @Operation(summary = "배송 상태 수정", description = "배송 상태 수정 API")
     @PatchMapping("/deliveries/{deliveryId}")
     public abstract Response<UUID> updateDelivery(@PathVariable UUID deliveryId, @RequestBody DeliveryStatus status);
