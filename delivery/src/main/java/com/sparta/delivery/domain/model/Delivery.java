@@ -24,7 +24,6 @@ public class Delivery extends BaseEntity {
     @Column(nullable = false)
     private DeliveryStatus currentStatus;
 
-    @Column(nullable = false)
     private Double actualDistance;
 
     @Column(nullable = false)
@@ -36,7 +35,6 @@ public class Delivery extends BaseEntity {
     @Column()
     private String recipientSlackId;
 
-    @Column(nullable = false)
     private Double actualTime;
 
     @Column(nullable = false)
