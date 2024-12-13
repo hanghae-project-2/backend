@@ -1,4 +1,4 @@
-package com.sparta.deliveryroute.domain.event;
+package com.sparta.deliveryroute.application.event;
 
 import java.util.UUID;
 

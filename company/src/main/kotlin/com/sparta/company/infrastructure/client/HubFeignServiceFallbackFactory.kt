@@ -11,9 +11,9 @@ import java.util.*
 import java.util.concurrent.TimeoutException
 
 @Component
-class HubFeignClientFallbackFactory : FallbackFactory<HubFeignClient> {
-    override fun create(cause: Throwable?): HubFeignClient {
-        return object : HubFeignClient {
+class HubFeignServiceFallbackFactory : FallbackFactory<HubFeignService> {
+    override fun create(cause: Throwable?): HubFeignService {
+        return object : HubFeignService {
             override fun existHub(hubId: UUID): Response<Boolean> {
                 when (cause) {
                     is CallNotPermittedException -> {

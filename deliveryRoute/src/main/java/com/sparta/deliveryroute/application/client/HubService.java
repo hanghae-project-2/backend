@@ -1,11 +1,11 @@
-package com.sparta.deliveryroute.domain.client;
+package com.sparta.deliveryroute.application.client;
 
-import com.sparta.deliveryroute.infrastructure.client.response.RouteResult;
+import com.sparta.deliveryroute.application.dto.response.RouteResult;
 import com.sparta.deliveryroute.presentation.api.response.Response;
 
 import java.util.UUID;
 
-public interface HubClient {
+public interface HubService {
 
 	Response<RouteResult> findHubRoutesById(UUID startHubId, UUID endHubId);
 

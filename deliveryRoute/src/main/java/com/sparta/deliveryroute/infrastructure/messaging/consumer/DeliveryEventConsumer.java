@@ -1,7 +1,7 @@
 package com.sparta.deliveryroute.infrastructure.messaging.consumer;
 
+import com.sparta.deliveryroute.application.event.CreateDeliveryEvent;
 import com.sparta.deliveryroute.application.service.DeliveryEventService;
-import com.sparta.deliveryroute.domain.event.CreateDeliveryEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;

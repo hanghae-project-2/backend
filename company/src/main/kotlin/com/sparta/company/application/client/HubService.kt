@@ -1,10 +1,10 @@
-package com.sparta.company.domain.client
+package com.sparta.company.application.client
 
 import com.sparta.company.presentation.api.response.Response
 import java.util.*
 
 
-interface HubClient {
+interface HubService {
 
     fun existHub(hubId: UUID): Response<Boolean>
 

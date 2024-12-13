@@ -1,5 +1,6 @@
 package com.sparta.company.application.service
 
+import com.sparta.company.application.client.HubService
 import com.sparta.company.application.dto.request.BaseCompanyRequestDto
 import com.sparta.company.application.dto.request.CompanySearchRequestDto
 import com.sparta.company.application.dto.request.RegisterCompanyRequestDto
@@ -10,7 +11,6 @@ import com.sparta.company.application.dto.response.toResponseDto
 import com.sparta.company.application.exception.IncorrectHubIdException
 import com.sparta.company.application.exception.NotFoundCompanyException
 import com.sparta.company.application.exception.NotFoundHubException
-import com.sparta.company.domain.client.HubClient
 import com.sparta.company.domain.repository.CompanyRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -20,7 +20,7 @@ import java.util.*
 
 @Service
 class CompanyService(
-    private val hubClient: HubClient,
+    private val hubService: HubService,
     private val companyRepository: CompanyRepository,
 ) {
 
@@ -29,7 +29,7 @@ class CompanyService(
 
         val hubId = extractUUID(request.hubId)
 
-        hubClient.existHub(hubId).takeIf { it.data == true } ?: throw NotFoundHubException()
+        hubService.existHub(hubId).takeIf { it.data == true } ?: throw NotFoundHubException()
 
         return companyRepository.save(request.toEntity()).id
     }

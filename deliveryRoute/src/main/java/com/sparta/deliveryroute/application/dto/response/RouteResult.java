@@ -1,4 +1,4 @@
-package com.sparta.deliveryroute.infrastructure.client.response;
+package com.sparta.deliveryroute.application.dto.response;
 
 import java.util.List;
 
