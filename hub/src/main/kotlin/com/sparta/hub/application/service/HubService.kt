@@ -98,12 +98,16 @@ class HubService(
                     this?.estimatedSecond = reverseResult?.estimatedSecond
                 }
 
+                hubRouteMap.values.forEach { value ->
+                    value.id?.let { redisService.setHubRoute("${value.startHub?.name}${value.endHub?.name}", it) }
+                }
                 listOfNotNull(forwardHubRoute, reverseHubRoute)
             }
 
         }.distinct()
 
         hubRouteRepository.saveAll(hubRouteList)
+        updateForOptimalHubRoutes(hubRoutes)
     }
 
     @Transactional(readOnly = true)
@@ -176,9 +180,7 @@ class HubService(
 
     @Transactional
     @Scheduled(cron = "0 0 0 * * *")
-    fun updateForOptimalHubRoutes() {
-
-        val hubRoutes = hubRouteRepository.findAll()
+    fun updateForOptimalHubRoutes(hubRoutes: List<HubRoute>) {
 
         val createRouteInfoGraph = hubRoutes.groupBy({ it.startHub!!.name }) { it.toRouteInfo() }
 

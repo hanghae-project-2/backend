@@ -20,7 +20,7 @@ import static com.sparta.deliveryroute.domain.model.DeliveryStatus.WAITING;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DeliveryRoute {
+public class DeliveryRoute extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
