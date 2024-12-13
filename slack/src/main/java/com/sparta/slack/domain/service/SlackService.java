@@ -4,4 +4,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface SlackService {
+
+    void sendMessage(String message);
 }
