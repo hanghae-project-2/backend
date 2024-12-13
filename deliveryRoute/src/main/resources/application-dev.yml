@@ -1,17 +1,14 @@
 server:
-  port: 19093
+  port: 19097
 
 management:
   endpoints:
     web:
       exposure:
-        include: refresh
-  zipkin:
-    tracing:
-      endpoint: ${ZIPKIN_ENDPOINT}
-  tracing:
-    sampling:
-      probability: 1.0
+        include: metrics, health, info
+  metrics:
+    tags:
+      application: delivery-route-server
 
 spring:
   datasource:
@@ -23,8 +20,8 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       pool-name: hikari-pool
-      catalog: company
-      maximum-pool-size: 9
+      catalog: delivery-route
+      maximum-pool-size: 13
       data-source-properties:
         idleTimeout: 600000
         maxLifetime: 1800000
@@ -44,18 +41,27 @@ spring:
       hibernate:
         jdbc:
           time_zone: Asia/Seoul
-          batch_size: 20
-        order_insert: true
         show-sql: true
         format_sql: true
         globally_quoted_identifiers: true
         globally_quoted_identifiers_skip_column_definitions: true
+  config:
+    import: classpath:application-key.yml
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: delivery-route-server
+      auto-offset-reset: earliest
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.value.trusted.packages: com.sparta.deliveryroute.application.event
+    listener:
+      ack-mode: record
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-  config:
-    import: classpath:application-key.yml
   cloud:
     openfeign:
       okhttp:
@@ -65,14 +71,9 @@ spring:
           default:
             connect-timeout: 5000
             read-timeout: 5000
-            logger-level: FULL
+            logger-level: HEADERS
       circuitbreaker:
         enabled: true
-  sql:
-    init:
-      mode: never
-
----
 
 resilience4j:
   circuitbreaker:
@@ -95,11 +96,20 @@ resilience4j:
         wait-duration:
           seconds: 1
         retry-exceptions:
-          - com.sparta.company.application.exception.FeignException
+          - com.sparta.deliveryroute.application.exception.FeignException
+        ignore-exceptions:
+          - jakarta.ws.rs.InternalServerErrorException
+      productClient:
+        max-attempts: 3
+        wait-duration:
+          seconds: 1
+        retry-exceptions:
+          - com.sparta.deliveryroute.application.exception.FeignException
         ignore-exceptions:
           - jakarta.ws.rs.InternalServerErrorException
 
 ---
+
 springdoc:
   use-fqn: true
   cache:
@@ -109,7 +119,7 @@ springdoc:
     groups:
       enabled: true
   swagger-ui:
-    path: /swagger-ui.html
+    path: /index.html
     tags-sorter: alpha
     operations-sorter: alpha
     groups-order: asc
@@ -124,7 +134,8 @@ springdoc:
 logging:
   level:
     org.hibernate:
-      SQL: debug
+      #      SQL: debug
+      SQL: error
       type: error
     com.zaxxer.hikari.HikariDataSource: error
 
@@ -134,7 +145,7 @@ eureka:
   instance:
     initial-status: up
     prefer-ip-address: false
-    instance-id: company-server
+    instance-id: delivery-route-server
   client:
     service-url:
       defaultZone: http://${EUREKA_NAME}:${EUREKA_PORT}/${EUREKA_HOST}/

@@ -1,6 +1,6 @@
 package com.sparta.company.domain.model
 
-import com.sparta.company.domain.exception.IncorrectCompanyTypeException
+import com.sparta.company.application.exception.IncorrectCompanyTypeException
 
 enum class CompanyType(
     val key: String,

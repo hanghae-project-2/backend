@@ -1,6 +1,6 @@
 package com.sparta.hub.presentation.api.handler
 
-import com.sparta.hub.domain.exception.HubException
+import com.sparta.hub.application.exception.HubException
 import com.sparta.hub.presentation.api.response.Response
 import io.swagger.v3.oas.annotations.Hidden
 import org.springframework.http.HttpStatus
@@ -17,5 +17,5 @@ class GlobalExceptionHandler {
     fun handleHubException(ex: HubException): Response<Unit> {
         return Response(ex.error.status.value(), ex.error.message)
     }
-    
+
 }
