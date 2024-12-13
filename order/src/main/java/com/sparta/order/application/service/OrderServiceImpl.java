@@ -1,6 +1,6 @@
 package com.sparta.order.application.service;
 
-import com.sparta.order.application.dto.CreateOrderEventDto;
+import com.sparta.order.application.event.CreateOrderEvent;
 import com.sparta.order.application.dto.request.OrderCreateRequestDto;
 import com.sparta.order.application.dto.request.OrderSearchRequestDto;
 import com.sparta.order.application.dto.request.OrderUpdateRequestDto;
@@ -58,7 +58,7 @@ public class OrderServiceImpl implements OrderService {
         //TODO : 배송담당자 조회 (Feign Client)
 
         //TODO : create order 이벤트 발생?
-        CreateOrderEventDto eventDto = CreateOrderEventDto.builder()
+        CreateOrderEvent eventDto = CreateOrderEvent.builder()
                         .orderId(order.getId())
                                 .productId(order.getProductId())
                                         .quantity(order.getQuantity()).build();

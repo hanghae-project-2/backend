@@ -1,8 +1,8 @@
 package com.sparta.order.infrastructure.message.producer;
 
-import com.sparta.order.application.dto.CreateOrderEventDto;
-import com.sparta.order.application.dto.DeliveryEventDto;
-import com.sparta.order.application.dto.ProductEventDto;
+import com.sparta.order.application.event.CreateOrderEvent;
+import com.sparta.order.application.event.DeliveryEvent;
+import com.sparta.order.application.event.ProductEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -15,12 +15,12 @@ public class KafkaProducer {
     private static final String PRODUCT_TOPIC = "created-order-event-product";
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void send(CreateOrderEventDto event) {
+    public void send(CreateOrderEvent event) {
 
-        ProductEventDto product = ProductEventDto.builder()
+        ProductEvent product = ProductEvent.builder()
                         .productId(event.productId()).quantity(event.quantity()).build();
 
-        DeliveryEventDto delivery = DeliveryEventDto.builder()
+        DeliveryEvent delivery = DeliveryEvent.builder()
                 .orderId(event.orderId()).build();
 
         kafkaTemplate.send(DELIVERY_TOPIC, delivery);

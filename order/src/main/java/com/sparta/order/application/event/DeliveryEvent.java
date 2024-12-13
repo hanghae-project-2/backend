@@ -1,11 +1,11 @@
-package com.sparta.order.application.dto;
+package com.sparta.order.application.event;
 
 import lombok.Builder;
 
 import java.util.UUID;
 
 @Builder
-public record DeliveryEventDto(
+public record DeliveryEvent(
         UUID orderId
 ) {
 }

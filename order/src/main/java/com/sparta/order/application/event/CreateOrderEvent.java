@@ -1,11 +1,12 @@
-package com.sparta.order.application.dto;
+package com.sparta.order.application.event;
 
 import lombok.Builder;
 
 import java.util.UUID;
 
 @Builder
-public record ProductEventDto(
+public record CreateOrderEvent(
+        UUID orderId,
         UUID productId,
         Integer quantity
 ) {
