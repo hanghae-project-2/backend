@@ -8,7 +8,7 @@ import java.util.*
 
 interface HubService {
 
-    fun registerHub(hubPosition: String, hubName: String): UUID
+    fun registerHub(hubAddress: String, hubName: String): UUID
 
     fun navigateHubRoutes()
 
@@ -19,4 +19,6 @@ interface HubService {
     fun getHubDetail(hubId: UUID): HubDetailResponseDto
 
     fun modifyHub(hubId: UUID, hubRequestDto: HubRequestDto): UUID
+
+    fun existHub(hubId: UUID): Boolean
 }

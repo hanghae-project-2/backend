@@ -22,7 +22,7 @@ class Hub(
 
     @Column(nullable = false)
     var longitude: Double? = null,
-) : BaseTimeEntity() {
+) : BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

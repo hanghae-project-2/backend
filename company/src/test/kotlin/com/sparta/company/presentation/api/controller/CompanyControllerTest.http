@@ -1,0 +1,11 @@
+### Create Company
+POST http://localhost:19093/companies
+Content-Type: application/json
+
+{
+  "name": "새 수령업체",
+  "type": "RECEIVER",
+  "address": "주소임 123",
+  "hubId": "7d343cda-b54c-11ef-a0d4-0242ac120002"
+}
+

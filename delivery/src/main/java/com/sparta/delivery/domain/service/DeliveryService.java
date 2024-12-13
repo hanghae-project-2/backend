@@ -1,14 +1,17 @@
 package com.sparta.delivery.domain.service;
 
-import com.sparta.delivery.application.dto.DelieveryList;
-import com.sparta.delivery.application.dto.DeliveryDetail;
+import com.sparta.delivery.application.dto.request.DeliverySearchRequestDto;
+import com.sparta.delivery.application.dto.response.DeliveryListResponseDto;
+import com.sparta.delivery.application.dto.response.DeliveryDetailResponseDto;
 import com.sparta.delivery.domain.model.DeliveryStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface DeliveryService {
-    DeliveryDetail getDeliveryById(UUID deliveryId);
+    DeliveryDetailResponseDto getDeliveryById(UUID deliveryId);
 
     UUID createDelivery();
 
@@ -16,5 +19,9 @@ public interface DeliveryService {
 
     UUID deleteDelivery(UUID deliveryId);
 
-    List<DelieveryList> getDeliveryList();
+    Page<DeliveryListResponseDto> getDeliveries(Pageable pageable, DeliverySearchRequestDto requestDto);
+
+    UUID getDeliveryByOrderId(UUID orderId);
+
+    UUID deleteDeliveryByOrderId(UUID orderId);
 }

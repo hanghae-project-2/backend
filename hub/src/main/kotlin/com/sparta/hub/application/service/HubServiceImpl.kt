@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.sparta.hub.application.dto.RouteInfo
 import com.sparta.hub.application.dto.RouteResult
 import com.sparta.hub.application.dto.RouteState
-import com.sparta.hub.application.dto.toDto
+import com.sparta.hub.application.dto.toRouteInfo
 import com.sparta.hub.application.redis.RedisService
 import com.sparta.hub.domain.exception.NotFoundHubException
 import com.sparta.hub.domain.exception.UnableCalculateRouteException
@@ -17,6 +17,7 @@ import com.sparta.hub.presentation.api.request.HubRequestDto
 import com.sparta.hub.presentation.api.response.HubDetailResponseDto
 import com.sparta.hub.presentation.api.response.HubResponseDto
 import com.sparta.hub.presentation.api.response.toDto
+import com.sparta.hub.presentation.api.response.toResponseDto
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -24,9 +25,9 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.util.*
+import java.util.concurrent.TimeoutException
 
 @Service
-@Transactional
 class HubServiceImpl(
     private val webClient: WebClient,
     private val redisService: RedisService,
@@ -54,20 +55,22 @@ class HubServiceImpl(
         "대구광역시 센터" to listOf("경상남도 센터", "부산광역시 센터", "울산광역시 센터", "경상북도 센터"),
     )
 
-    override fun registerHub(hubPosition: String, hubName: String): UUID {
+    @Transactional
+    override fun registerHub(hubAddress: String, hubName: String): UUID {
 
-        val result = findLatitudeAndLongitude(hubPosition)
+        val result = findLatitudeAndLongitude(hubAddress)
 
         return hubRepository.save(
             Hub(
                 name = hubName,
-                address = hubPosition,
+                address = hubAddress,
                 latitude = result?.get("latitude"),
                 longitude = result?.get("longitude"),
             )
         ).id!!
     }
 
+    @Transactional
     @Scheduled(cron = "0 0 0 * * *")
     override fun navigateHubRoutes() {
 
@@ -103,6 +106,7 @@ class HubServiceImpl(
         hubRouteRepository.saveAll(hubRouteList)
     }
 
+    @Transactional(readOnly = true)
     override fun getOptimalHubRoutes(startHubName: String, endHubName: String): RouteResult {
 
         val startHub = hubRepository.findByNameIs(startHubName).orElseThrow { NotFoundHubException() }
@@ -112,13 +116,7 @@ class HubServiceImpl(
             return it
         }
 
-        val createRouteInfoGraph = hubRouteRepository.findAll().groupBy({ it.startHub!!.name }) {
-            RouteInfo(
-                destination = it.endHub?.name,
-                distance = it.estimatedMeter?.toInt(),
-                time = it.estimatedSecond?.toInt(),
-            )
-        }
+        val createRouteInfoGraph = hubRouteRepository.findAll().groupBy({ it.startHub!!.name }) { it.toRouteInfo() }
 
         return findOptimalRoute(startHub, endHub, createRouteInfoGraph)
     }
@@ -134,15 +132,10 @@ class HubServiceImpl(
 
         val routeResultList = redisService.getHubRouteByStartingWithKey(hub.name)
 
-        return HubDetailResponseDto(
-            name = hub.name,
-            address = hub.address,
-            latitude = hub.latitude?.toInt(),
-            longitude = hub.longitude?.toInt(),
-            connectedHubList = routeResultList.map { it.toDto() }
-        )
+        return hub.toResponseDto(routeResultList)
     }
 
+    @Transactional
     override fun modifyHub(hubId: UUID, hubRequestDto: HubRequestDto): UUID {
         val hub = hubRepository.findById(hubId).orElseThrow { NotFoundHubException() }
 
@@ -160,18 +153,19 @@ class HubServiceImpl(
         return hubRepository.save(hub).id!!
     }
 
+    @Transactional(readOnly = true)
+    override fun existHub(hubId: UUID): Boolean {
+        throw TimeoutException()
+        return hubRepository.existsById(hubId)
+    }
+
+    @Transactional
     @Scheduled(cron = "0 0 0 * * *")
     fun updateForOptimalHubRoutes() {
 
         val hubRoutes = hubRouteRepository.findAll()
 
-        val createRouteInfoGraph = hubRoutes.groupBy({ it.startHub!!.name }) {
-            RouteInfo(
-                destination = it.endHub?.name,
-                distance = it.estimatedMeter?.toInt(),
-                time = it.estimatedSecond?.toInt(),
-            )
-        }
+        val createRouteInfoGraph = hubRoutes.groupBy({ it.startHub!!.name }) { it.toRouteInfo() }
 
         val hubs = hubRoutes.mapNotNull { it.startHub }.distinct()
         val reverseList = hubs.asReversed()
@@ -193,7 +187,7 @@ class HubServiceImpl(
         endHub: Hub,
         createRouteInfoGraph: Map<String, List<RouteInfo>>
     ): RouteResult {
-        
+
         val pq = PriorityQueue<RouteState>(compareBy { it.cumulativeTime })
         val visited = mutableSetOf<String>()
 

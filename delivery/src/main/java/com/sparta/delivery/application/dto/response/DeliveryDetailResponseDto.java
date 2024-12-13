@@ -1,4 +1,4 @@
-package com.sparta.delivery.application.dto;
+package com.sparta.delivery.application.dto.response;
 
 import com.sparta.delivery.domain.model.Delivery;
 import com.sparta.delivery.domain.model.DeliveryStatus;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Builder
-public record DeliveryDetail(
+public record DeliveryDetailResponseDto(
         UUID deliveryId,
         UUID orderId,
         DeliveryStatus deliveryStatus,
@@ -19,12 +19,12 @@ public record DeliveryDetail(
         String destinationHubName,
         String recipientName,
         String deliveryAddress,
-        List<DeliveryRoute> deliveryRoutes,
+        List<DeliveryRouteResponseDto> deliveryRoutes,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static DeliveryDetail fromEntity(Delivery delivery){
-        return DeliveryDetail.builder()
+    public static DeliveryDetailResponseDto fromEntity(Delivery delivery){
+        return DeliveryDetailResponseDto.builder()
                 .deliveryId(delivery.getId())
                 .orderId(delivery.getOrderId())
                 .deliveryStatus(delivery.getCurrentStatus())

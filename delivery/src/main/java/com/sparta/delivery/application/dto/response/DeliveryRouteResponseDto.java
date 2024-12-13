@@ -1,9 +1,9 @@
-package com.sparta.delivery.application.dto;
+package com.sparta.delivery.application.dto.response;
 
 import java.util.UUID;
 
 
-public record DeliveryRoute(
+public record DeliveryRouteResponseDto(
         UUID deliveryRouteId,
         String deliveryManagetName,
         Integer sequence,
