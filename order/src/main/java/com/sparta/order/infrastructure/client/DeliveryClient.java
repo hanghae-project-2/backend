@@ -1,4 +1,4 @@
-package com.sparta.order.domain.client;
+package com.sparta.order.infrastructure.client;
 
 
 import com.sparta.order.application.dto.response.DeliveryListResponseDto;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient(name = "delivery-client")
+@FeignClient(name = "delivery-service")
 public interface DeliveryClient {
 
     @GetMapping("/deliveries/orders/{orderId}")
