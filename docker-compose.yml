@@ -20,6 +20,7 @@ services:
       - "9411:9411"
     networks:
       - default
+      
   zookeeper:
     image: wurstmeister/zookeeper:latest
     container_name: zookeeper-container
