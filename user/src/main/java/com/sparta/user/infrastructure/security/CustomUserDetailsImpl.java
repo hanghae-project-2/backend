@@ -1,22 +1,23 @@
-package com.sparta.user.security;
+package com.sparta.user.infrastructure.security;
 
 import com.sparta.user.domain.User;
 import com.sparta.user.domain.UserRole;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.UUID;
 
-@RequiredArgsConstructor
-public class CustomUserDetailsImpl implements UserDetails {
+public record CustomUserDetailsImpl(User user) implements UserDetails {
 
-    private final User user;
+    public UUID getId() {
+        return user.getId();
+    }
 
-    public User getUser() {
-        return user;
+    public UserRole getRole() {
+        return user.getRole();
     }
 
     @Override
@@ -40,6 +41,8 @@ public class CustomUserDetailsImpl implements UserDetails {
         authorities.add(simpleGrantedAuthority);
 
         return authorities;
+
+//        return List.of(new SimpleGrantedAuthority(user.getRole().getAuthority()));
     }
 
     @Override

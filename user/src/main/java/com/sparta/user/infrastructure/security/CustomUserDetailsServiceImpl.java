@@ -1,4 +1,4 @@
-package com.sparta.user.security;
+package com.sparta.user.infrastructure.security;
 
 import com.sparta.user.domain.User;
 import com.sparta.user.domain.UserRepository;

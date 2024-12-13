@@ -4,11 +4,10 @@ import lombok.Getter;
 
 @Getter
 public enum UserRole {
-    MASTER(Authority.MASTER),  // 마스터 권한
-    HUB_ADMIN(Authority.HUB_ADMIN),  // 허브 관리자 권한
-    DELIVERY_PERSON(Authority.DELIVERY_PERSON), //배달 기사 권한
-    COMPANY_ADMIN(Authority.COMPANY_ADMIN);  // 업체 관리자 권한
-
+    MASTER(Authority.MASTER),
+    HUB_ADMIN(Authority.HUB_ADMIN),
+    DELIVERY_PERSON(Authority.DELIVERY_PERSON),
+    COMPANY_ADMIN(Authority.COMPANY_ADMIN);
 
     private final String authority;
 

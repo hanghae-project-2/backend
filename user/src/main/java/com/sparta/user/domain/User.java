@@ -9,10 +9,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "users")
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false, nullable = false)
@@ -65,4 +64,50 @@ public class User {
         this.updateAt = LocalDateTime.now();
     }
 
+    private User(String username, String password, String slackId, UserRole role, Boolean isApproved, Boolean isDelete, String createdBy) {
+        this.username = username;
+        this.password = password;
+        this.slackId = slackId;
+        this.role = role;
+        this.isApproved = isApproved;
+        this.isDelete = isDelete;
+        this.createdBy = createdBy;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public static User create(String username, String password, String slackId, UserRole role, String createdBy) {
+        return new User(username, password, slackId, role, false, false, createdBy);
+    }
+
+    public void approve(UserRole role, String updatedBy) {
+        this.isApproved = true;
+        this.role = role;
+        this.updateBy = updatedBy;
+        this.updateAt = LocalDateTime.now();
+    }
+
+    public void updatePassword(String newPassword, String updatedBy) {
+        this.password = newPassword;
+        this.updateBy = updatedBy;
+        this.updateAt = LocalDateTime.now();
+    }
+
+    public void updateSlackId(String newSlackId, String updatedBy) {
+        this.slackId = newSlackId;
+        this.updateBy = updatedBy;
+        this.updateAt = LocalDateTime.now();
+    }
+
+    public void updateRole(UserRole newRole, String updatedBy) {
+        this.role = newRole;
+        this.updateBy = updatedBy;
+        this.updateAt = LocalDateTime.now();
+    }
+
+    public void delete(String deletedBy) {
+        this.isApproved = false;
+        this.isDelete = true;
+        this.deleteBy = deletedBy;
+        this.deleteAt = LocalDateTime.now();
+    }
 }
