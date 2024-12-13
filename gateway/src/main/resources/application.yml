@@ -13,6 +13,8 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/users/**
+        - filters:
+            - JwtAuthenticationFilter
         - id: hub-service
           uri: lb://hub-service
           predicates:

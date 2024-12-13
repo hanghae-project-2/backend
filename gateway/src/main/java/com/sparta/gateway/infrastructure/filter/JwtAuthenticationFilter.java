@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -17,12 +18,13 @@ import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
 
+@Slf4j
 @Component
-public class LocalJwtAuthenticationFilter implements GlobalFilter {
+public class JwtAuthenticationFilter implements GlobalFilter {
     private final String secretKey;
     private final AuthService authService;
 
-    public LocalJwtAuthenticationFilter(@Value("${service.jwt.secret-key}") String secretKey, @Lazy AuthService authService) {
+    public JwtAuthenticationFilter(@Value("${service.jwt.secret-key}") String secretKey, @Lazy AuthService authService) {
         this.secretKey = secretKey;
         this.authService = authService;
     }
@@ -30,8 +32,8 @@ public class LocalJwtAuthenticationFilter implements GlobalFilter {
     @Override
     public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
-        // 이 요청들은 검증하지 않음.
-        if (path.equals("/users/signup") || path.equals("/users/signin")) {
+        log.error("게이트웨이 검증 필터: {}", path);
+        if (path.equals("/users/signUp") || path.equals("/users/signIn")) {
             return chain.filter(exchange);
         }
 
