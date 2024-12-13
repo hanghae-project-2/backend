@@ -71,6 +71,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         return deliveryRepository.getDeliveries(pageable, requestDto);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UUID getDeliveryByOrderId(UUID orderId) {
         Delivery delivery = deliveryRepository.findByOrderIdAndIsDeleteFalse(orderId).orElseThrow(

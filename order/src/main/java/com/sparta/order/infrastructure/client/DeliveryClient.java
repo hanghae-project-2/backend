@@ -1,4 +1,4 @@
-package com.sparta.order.domain.client;
+package com.sparta.order.infrastructure.client;
 
 
 import com.sparta.order.application.dto.response.DeliveryListResponseDto;
