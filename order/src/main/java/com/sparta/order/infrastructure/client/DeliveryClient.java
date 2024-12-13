@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient(name = "delivery-client")
+@FeignClient(name = "delivery-service")
 public interface DeliveryClient {
 
     @GetMapping("/deliveries/orders/{orderId}")

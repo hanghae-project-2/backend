@@ -31,10 +31,10 @@ public class Delivery extends BaseEntity {
     private String deliveryAddress;
 
     @Column(nullable = false)
-    private String receiverName;
+    private String recipientName;
 
     @Column()
-    private String receiverSlackId;
+    private String recipientSlackId;
 
     @Column(nullable = false)
     private Double actualTime;

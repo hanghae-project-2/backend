@@ -12,7 +12,7 @@ import java.util.UUID;
 public record DeliveryDetailResponseDto(
         UUID deliveryId,
         UUID orderId,
-        DeliveryStatus deliveryStatus,
+        String deliveryStatus,
         UUID originHubId,
         String originHubName,
         UUID destinationHubId,
@@ -23,18 +23,19 @@ public record DeliveryDetailResponseDto(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static DeliveryDetailResponseDto fromEntity(Delivery delivery){
+
+    public static DeliveryDetailResponseDto from(Delivery delivery, HubResponseDto originHub, HubResponseDto destinationHub, List<DeliveryRouteResponseDto> deliveryRoutes) {
         return DeliveryDetailResponseDto.builder()
                 .deliveryId(delivery.getId())
                 .orderId(delivery.getOrderId())
-                .deliveryStatus(delivery.getCurrentStatus())
-                .originHubId(delivery.getOriginHubId())
-                .originHubName("출발 허브")
-                .destinationHubId(delivery.getDestinationHubId())
-                .destinationHubName("도착 허브")
-                .recipientName(delivery.getReceiverName())
+                .deliveryStatus(delivery.getCurrentStatus().toString())
+                .originHubId(originHub.hubId())
+                .originHubName(originHub.hubName())
+                .destinationHubId(destinationHub.hubId())
+                .destinationHubName(destinationHub.hubName())
+                .recipientName(delivery.getRecipientName())
                 .deliveryAddress(delivery.getDeliveryAddress())
-                .deliveryRoutes(null)
+                .deliveryRoutes(deliveryRoutes)
                 .createdAt(delivery.getCreatedAt())
                 .updatedAt(delivery.getUpdatedAt())
                 .build();
