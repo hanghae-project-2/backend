@@ -8,6 +8,7 @@ import com.sparta.hub.application.dto.request.HubRequestDto
 import com.sparta.hub.application.dto.request.HubSearchRequestDto
 import com.sparta.hub.application.dto.response.HubDetailResponseDto
 import com.sparta.hub.application.dto.response.HubResponseDto
+import com.sparta.hub.application.dto.response.HubRouteDetailResponseDto
 import com.sparta.hub.application.dto.response.HubSummaryResponseDto
 import com.sparta.hub.application.dto.response.toResponseDto
 import com.sparta.hub.application.dto.toRouteInfo
@@ -42,6 +43,8 @@ class HubService(
     @Value("\${kakao.api.key}")
     private lateinit var kakaoApiKey: String
 
+    private val prefix: String = "hut-route"
+
     val connections = mapOf(
         "경기 남부 센터" to listOf("경기 북부 센터", "서울특별시 센터", "인천광역시 센터", "강원특별자치도 센터", "경상북도 센터", "대전광역시 센터", "대구광역시 센터"),
         "대전광역시 센터" to listOf(
@@ -65,8 +68,8 @@ class HubService(
             Hub(
                 name = hubName,
                 address = hubAddress,
-                latitude = result?.get("latitude"),
-                longitude = result?.get("longitude"),
+                latitude = result?.get("latitude") ?: throw UnableCalculateRouteException(),
+                longitude = result["longitude"] ?: throw UnableCalculateRouteException(),
             )
         ).id!!
     }
@@ -86,21 +89,30 @@ class HubService(
                 val startHub = hubMap[startHubName] ?: throw NotFoundHubException()
                 val endHub = hubMap[endHubName] ?: throw NotFoundHubException()
 
-                val forwardResult = calculateForHubRoute(startHub, endHub)
-                val reverseResult = calculateForHubRoute(endHub, startHub)
+                val forwardResult = calculateForHubRoute(startHub, endHub)!!
+                val reverseResult = calculateForHubRoute(endHub, startHub)!!
 
                 val forwardHubRoute = hubRouteMap["${startHub.id}-${endHub.id}"].apply {
-                    this?.estimatedMeter = forwardResult?.estimatedMeter
-                    this?.estimatedSecond = forwardResult?.estimatedSecond
+                    this?.updateEstimatedInfo(
+                        forwardResult.estimatedSecond,
+                        forwardResult.estimatedMeter
+                    )
                 }
 
                 val reverseHubRoute = hubRouteMap["${endHub.id}-${startHub.id}"].apply {
-                    this?.estimatedMeter = reverseResult?.estimatedMeter
-                    this?.estimatedSecond = reverseResult?.estimatedSecond
+                    this?.updateEstimatedInfo(
+                        reverseResult.estimatedSecond,
+                        reverseResult.estimatedMeter
+                    )
                 }
 
                 hubRouteMap.values.forEach { value ->
-                    value.id?.let { redisService.setHubRoute("${value.startHub?.name}${value.endHub?.name}", it) }
+                    value.id?.let {
+                        redisService.setHubRoute(
+                            "${prefix}::${value.startHub?.name} -> ${value.endHub?.name}",
+                            it
+                        )
+                    }
                 }
                 listOfNotNull(forwardHubRoute, reverseHubRoute)
             }
@@ -194,9 +206,12 @@ class HubService(
         return hubRepository.findByIds(ids).map { it.toResponseDto() }
     }
 
-    @Transactional
-    @Scheduled(cron = "0 0 0 * * *")
-    fun updateForOptimalHubRoutes(hubRoutes: List<HubRoute>) {
+    @Transactional(readOnly = true)
+    fun findHubRoutesByHubRouteId(hubRouteIdList: List<UUID>): List<HubRouteDetailResponseDto> {
+        return hubRouteRepository.findByIds(hubRouteIdList)
+    }
+
+    private fun updateForOptimalHubRoutes(hubRoutes: List<HubRoute>) {
 
         val createRouteInfoGraph = hubRoutes.groupBy({ it.startHub!!.name }) { it.toRouteInfo() }
 
@@ -320,8 +335,8 @@ class HubService(
                 val summary = firstRoute["summary"]
 
                 HubRoute(
-                    estimatedSecond = summary["duration"]?.asDouble(),
-                    estimatedMeter = summary["distance"]?.asDouble(),
+                    estimatedSecond = summary["duration"].asInt(),
+                    estimatedMeter = summary["distance"].asInt(),
                     startHub = startHub,
                     endHub = endHub
                 )

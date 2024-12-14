@@ -12,6 +12,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RedisService {
 
+	private static final String PREFIX = "hut-route::";
+	private static final String ARROW = " -> ";
 	private final RedisTemplate<String, Object> redisTemplate;
 
 	public RouteResult getHash(String startHubName, String endHubName) {
@@ -20,7 +22,7 @@ public class RedisService {
 
 	public UUID getValue(String startHubName, String endHubName) {
 		return UUID.fromString(
-				Objects.requireNonNull(redisTemplate.opsForValue().get(startHubName + endHubName)).toString()
+				Objects.requireNonNull(redisTemplate.opsForValue().get(PREFIX + startHubName + ARROW + endHubName)).toString()
 		);
 	}
 }

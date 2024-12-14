@@ -23,7 +23,7 @@ public class DeliveryEventService {
 	private final RedisService redisService;
 
 	@Transactional
-	public void CreateDeliveryRoutes(CreateDeliveryEvent event) {
+	public void createDeliveryRoutes(CreateDeliveryEvent event) {
 		RouteResult result = hubService.findHubRoutesById(event.startHubId(), event.endHubId());
 
 		Iterator<String> iterator = result.path().iterator();

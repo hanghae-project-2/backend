@@ -13,26 +13,33 @@ import java.util.*
 @Entity
 class HubRoute(
     endHub: Hub,
-
     startHub: Hub,
-
-    @Column(nullable = false)
-    var estimatedSecond: Double?,
-
-    @Column(nullable = false)
-    var estimatedMeter: Double?
+    estimatedSecond: Int,
+    estimatedMeter: Int
 ) : BaseEntity() {
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "end_hub_id", nullable = false)
-    var endHub: Hub? = endHub
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "start_hub_id", nullable = false)
     var startHub: Hub? = startHub
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "end_hub_id", nullable = false)
+    var endHub: Hub? = endHub
+
+    @Column(nullable = false)
+    var estimatedSecond: Int = estimatedSecond
+        protected set
+
+    @Column(nullable = false)
+    var estimatedMeter: Int = estimatedMeter
+        protected set
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null
 
+    fun updateEstimatedInfo(estimatedSecond: Int, estimatedMeter: Int) {
+        this.estimatedSecond = estimatedSecond
+        this.estimatedMeter = estimatedMeter
+    }
 }

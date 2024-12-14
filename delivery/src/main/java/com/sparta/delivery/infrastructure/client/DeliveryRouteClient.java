@@ -11,9 +11,9 @@ import java.util.UUID;
 
 @FeignClient(name = "delivery-route-server")
 public interface DeliveryRouteClient {
-    @DeleteMapping("/delivery-route/deliveries/{deliveryId}")
-    void deleteByDeliveryId(@PathVariable UUID deliveryId);
+	@DeleteMapping("/delivery-route/deliveries/{deliveryId}")
+	void deleteByDeliveryId(@PathVariable UUID deliveryId);
 
-    @GetMapping("/delivery-route/deliveries/{deliveryId}")
-    List<DeliveryRouteResponseDto> getDeliveryRoutesByDeliveryId(UUID deliveryId);
+	@GetMapping("/delivery-route/deliveries/{deliveryId}")
+	List<DeliveryRouteResponseDto> getDeliveryRoutesByDeliveryId(@PathVariable UUID deliveryId);
 }
