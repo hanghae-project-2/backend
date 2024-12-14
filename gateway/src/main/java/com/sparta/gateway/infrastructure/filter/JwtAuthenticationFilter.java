@@ -6,7 +6,6 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -18,7 +17,6 @@ import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
 
-@Slf4j
 @Component
 public class JwtAuthenticationFilter implements GlobalFilter {
     private final String secretKey;
@@ -32,7 +30,7 @@ public class JwtAuthenticationFilter implements GlobalFilter {
     @Override
     public Mono<Void> filter(final ServerWebExchange exchange, final GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
-        log.error("게이트웨이 검증 필터: {}", path);
+
         if (path.equals("/users/signUp") || path.equals("/users/signIn")) {
             return chain.filter(exchange);
         }

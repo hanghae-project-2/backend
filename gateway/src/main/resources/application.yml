@@ -1,5 +1,5 @@
 server:
-  port: 19091
+  port: 19090
 
 spring:
   main:
@@ -13,8 +13,6 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/users/**
-        - filters:
-            - JwtAuthenticationFilter
         - id: hub-service
           uri: lb://hub-service
           predicates:
