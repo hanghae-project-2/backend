@@ -3,6 +3,7 @@ package com.sparta.delivery.presentation.api.controller.docs;
 import com.sparta.delivery.application.dto.request.DeliverySearchRequestDto;
 import com.sparta.delivery.application.dto.response.DeliveryListResponseDto;
 import com.sparta.delivery.application.dto.response.DeliveryDetailResponseDto;
+import com.sparta.delivery.application.dto.response.PageResponseDto;
 import com.sparta.delivery.domain.model.DeliveryStatus;
 import com.sparta.delivery.presentation.api.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +36,7 @@ public abstract class DeliveryControllerDocs {
 
     @Operation(summary = "배송 목록 조회(검색)", description ="배송 목록 조회(검색) API" )
     @GetMapping("/deliveries")
-    public abstract Response<Page<DeliveryListResponseDto>> getDeliveries(Pageable pageable, DeliverySearchRequestDto requestDto);
+    public abstract Response<PageResponseDto<DeliveryListResponseDto>> getDeliveries(@ModelAttribute DeliverySearchRequestDto requestDto);
 
     //임시 api 이름 api 규칙 질문할것
     @GetMapping("/deliveries/orders/{orderId}")

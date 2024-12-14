@@ -3,6 +3,7 @@ package com.sparta.delivery.presentation.api.controller;
 import com.sparta.delivery.application.dto.request.DeliverySearchRequestDto;
 import com.sparta.delivery.application.dto.response.DeliveryListResponseDto;
 import com.sparta.delivery.application.dto.response.DeliveryDetailResponseDto;
+import com.sparta.delivery.application.dto.response.PageResponseDto;
 import com.sparta.delivery.domain.model.DeliveryStatus;
 import com.sparta.delivery.domain.service.DeliveryService;
 import com.sparta.delivery.presentation.api.controller.docs.DeliveryControllerDocs;
@@ -48,10 +49,10 @@ public class DeliveryController extends DeliveryControllerDocs {
     }
 
     @Override
-    @GetMapping()
-    public Response<Page<DeliveryListResponseDto>> getDeliveries(Pageable pageable, DeliverySearchRequestDto requestDto) {
-        return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), deliveryService.getDeliveries(pageable, requestDto));
+    public Response<PageResponseDto<DeliveryListResponseDto>> getDeliveries(@ModelAttribute DeliverySearchRequestDto requestDto) {
+        return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), deliveryService.getDeliveries(requestDto));
     }
+
 
     @GetMapping("/orders/{orderId}")
     @Override
