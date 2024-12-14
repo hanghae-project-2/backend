@@ -7,6 +7,7 @@ import com.sparta.hub.application.dto.RouteState
 import com.sparta.hub.application.dto.request.HubRequestDto
 import com.sparta.hub.application.dto.request.HubSearchRequestDto
 import com.sparta.hub.application.dto.response.HubDetailResponseDto
+import com.sparta.hub.application.dto.response.HubResponseDto
 import com.sparta.hub.application.dto.response.HubSummaryResponseDto
 import com.sparta.hub.application.dto.response.toResponseDto
 import com.sparta.hub.application.dto.toRouteInfo
@@ -17,8 +18,6 @@ import com.sparta.hub.domain.model.HubRoute
 import com.sparta.hub.domain.repository.HubRepository
 import com.sparta.hub.domain.repository.HubRouteRepository
 import com.sparta.hub.infrastructure.redis.RedisService
-import com.sparta.hub.presentation.api.response.HubResponse
-import com.sparta.hub.presentation.api.response.toResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -115,8 +114,8 @@ class HubService(
     @Transactional(readOnly = true)
     fun getOptimalHubRoutes(startHubId: UUID, endHubId: UUID): RouteResult {
 
-        val startHub = hubRepository.findById(startHubId).orElseThrow { NotFoundHubException() }
-        val endHub = hubRepository.findById(endHubId).orElseThrow { NotFoundHubException() }
+        val startHub = hubRepository.findByIdOrNull(startHubId) ?: throw NotFoundHubException()
+        val endHub = hubRepository.findByIdOrNull(endHubId) ?: throw NotFoundHubException()
 
         redisService.getHubRouteResult(startHub.name, endHub.name)?.let {
             return it
@@ -150,7 +149,7 @@ class HubService(
 
     @Transactional(readOnly = true)
     fun getHubDetail(hubId: UUID): HubDetailResponseDto {
-        val hub = hubRepository.findById(hubId).orElseThrow { NotFoundHubException() }
+        val hub = hubRepository.findByIdOrNull(hubId) ?: throw NotFoundHubException()
 
         val routeResultList = redisService.getHubRouteByStartingWithKey(hub.name)
 
@@ -159,7 +158,7 @@ class HubService(
 
     @Transactional
     fun modifyHub(hubId: UUID, hubRequestDto: HubRequestDto): UUID {
-        val hub = hubRepository.findById(hubId).orElseThrow { NotFoundHubException() }
+        val hub = hubRepository.findByIdOrNull(hubId) ?: throw NotFoundHubException()
 
         val latitudeAndLongitude = findLatitudeAndLongitude(hubRequestDto.address)
 
@@ -181,18 +180,18 @@ class HubService(
     }
 
     @Transactional(readOnly = true)
-    fun findHubByName(hubName: String): HubResponse {
-        return hubRepository.findByNameIs(hubName).orElseThrow { NotFoundHubException() }.toResponse()
+    fun findHubByName(hubName: String): HubResponseDto {
+        return hubRepository.findByNameIs(hubName).orElseThrow { NotFoundHubException() }.toResponseDto()
     }
 
     @Transactional(readOnly = true)
-    fun findHubById(hubId: UUID): HubResponse {
-        return hubRepository.findById(hubId).orElseThrow { NotFoundHubException() }.toResponse()
+    fun findHubById(hubId: UUID): HubResponseDto {
+        return hubRepository.findByIdOrNull(hubId)?.toResponseDto() ?: throw NotFoundHubException()
     }
 
     @Transactional(readOnly = true)
-    fun findHubsByIds(ids: List<UUID>): List<HubResponse> {
-        return hubRepository.findByIds(ids).map { it.toResponse() }
+    fun findHubsByIds(ids: List<UUID>): List<HubResponseDto> {
+        return hubRepository.findByIds(ids).map { it.toResponseDto() }
     }
 
     @Transactional

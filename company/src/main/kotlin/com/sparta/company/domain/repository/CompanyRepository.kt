@@ -13,5 +13,9 @@ interface CompanyRepository {
 
     fun findByIdOrNull(id: UUID): Company?
 
+    fun findByNameIs(name: String): Optional<Company>
+
+    fun findByIds(ids: List<UUID>): List<Company>
+
     fun findPageBy(pageRequest: Pageable, searchRequestDto: CompanySearchRequestDto): Page<CompanySummaryResponseDto>
 }

@@ -3,7 +3,7 @@ package com.sparta.company.presentation.api.controller.docs
 import com.sparta.company.presentation.api.request.BaseCompanyRequest
 import com.sparta.company.presentation.api.request.CompanySearchRequest
 import com.sparta.company.presentation.api.request.RegisterCompanyRequest
-import com.sparta.company.presentation.api.response.BaseCompanyResponse
+import com.sparta.company.presentation.api.response.CompanyResponse
 import com.sparta.company.presentation.api.response.CompanySummaryResponse
 import com.sparta.company.presentation.api.response.Response
 import io.swagger.v3.oas.annotations.Operation
@@ -117,7 +117,7 @@ abstract class CompanyControllerDocs {
     @GetMapping("/companies/{companyId}")
     abstract fun getCompany(
         @PathVariable companyId: UUID
-    ): Response<BaseCompanyResponse>
+    ): Response<CompanyResponse>
 
     @Operation(summary = "업체 검색", description = "업체를 검색하는 API 입니다.")
     @ApiResponses(

@@ -37,8 +37,8 @@ class HubRepositoryImpl(
         return hubJpaRepository.findAll()
     }
 
-    override fun findById(id: UUID): Optional<Hub> {
-        return hubJpaRepository.findById(id)
+    override fun findByIdOrNull(id: UUID): Hub? {
+        return hubJpaRepository.findById(id).orElse(null)
     }
 
     override fun existsById(id: UUID): Boolean {

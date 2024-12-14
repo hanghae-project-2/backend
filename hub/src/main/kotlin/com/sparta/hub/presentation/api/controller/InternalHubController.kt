@@ -3,6 +3,7 @@ package com.sparta.hub.presentation.api.controller
 import com.sparta.hub.application.dto.RouteResult
 import com.sparta.hub.application.service.HubService
 import com.sparta.hub.presentation.api.response.HubResponse
+import com.sparta.hub.presentation.api.response.toResponse
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,17 +29,17 @@ class InternalHubController(
     fun findHubByName(
         @RequestParam hubName: String
     ): HubResponse =
-        hubService.findHubByName(hubName)
+        hubService.findHubByName(hubName).toResponse()
 
     @GetMapping("/hubs/find/{hubId}")
     fun findHubById(
         @PathVariable hubId: UUID
     ): HubResponse =
-        hubService.findHubById(hubId)
+        hubService.findHubById(hubId).toResponse()
 
     @PostMapping("/hubs/batch")
     fun findHubsByIds(
         @RequestBody ids: List<UUID>
     ): List<HubResponse> =
-        hubService.findHubsByIds(ids)
+        hubService.findHubsByIds(ids).map { it.toResponse() }
 }

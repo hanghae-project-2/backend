@@ -1,6 +1,6 @@
 package com.sparta.hub.presentation.api.response
 
-import com.sparta.hub.domain.model.Hub
+import com.sparta.hub.application.dto.response.HubResponseDto
 import java.util.*
 
 data class HubResponse(
@@ -8,7 +8,7 @@ data class HubResponse(
     val hubName: String,
 )
 
-fun Hub.toResponse() = HubResponse(
-    hubId = this.id!!,
-    hubName = this.name,
+fun HubResponseDto.toResponse() = HubResponse(
+    hubId = this.hubId,
+    hubName = this.hubName,
 )

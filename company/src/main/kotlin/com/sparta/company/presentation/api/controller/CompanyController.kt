@@ -6,7 +6,7 @@ import com.sparta.company.presentation.api.request.BaseCompanyRequest
 import com.sparta.company.presentation.api.request.CompanySearchRequest
 import com.sparta.company.presentation.api.request.RegisterCompanyRequest
 import com.sparta.company.presentation.api.request.toDto
-import com.sparta.company.presentation.api.response.BaseCompanyResponse
+import com.sparta.company.presentation.api.response.CompanyResponse
 import com.sparta.company.presentation.api.response.CompanySummaryResponse
 import com.sparta.company.presentation.api.response.Response
 import com.sparta.company.presentation.api.response.toResponse
@@ -52,7 +52,7 @@ class CompanyController(
     @GetMapping("/{companyId}")
     override fun getCompany(
         @PathVariable companyId: UUID
-    ): Response<BaseCompanyResponse> =
+    ): Response<CompanyResponse> =
         Response(
             HttpStatus.OK.value(),
             HttpStatus.OK.reasonPhrase,
