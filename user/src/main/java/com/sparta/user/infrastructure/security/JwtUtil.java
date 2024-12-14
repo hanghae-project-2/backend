@@ -46,6 +46,7 @@ public class JwtUtil {
         String token = Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("tokenType", "access")
+                .claim("userId", user.getId())
                 .claim("username", user.getUsername())
                 .claim("role", user.getRole())
                 .setIssuer(issuer)
