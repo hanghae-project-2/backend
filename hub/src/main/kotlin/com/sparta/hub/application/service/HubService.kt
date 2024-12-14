@@ -17,6 +17,8 @@ import com.sparta.hub.domain.model.HubRoute
 import com.sparta.hub.domain.repository.HubRepository
 import com.sparta.hub.domain.repository.HubRouteRepository
 import com.sparta.hub.infrastructure.redis.RedisService
+import com.sparta.hub.presentation.api.response.HubResponse
+import com.sparta.hub.presentation.api.response.toResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -176,6 +178,21 @@ class HubService(
     @Transactional(readOnly = true)
     fun existHub(hubId: UUID): Boolean {
         return hubRepository.existsById(hubId)
+    }
+
+    @Transactional(readOnly = true)
+    fun findHubByName(hubName: String): HubResponse {
+        return hubRepository.findByNameIs(hubName).orElseThrow { NotFoundHubException() }.toResponse()
+    }
+
+    @Transactional(readOnly = true)
+    fun findHubById(hubId: UUID): HubResponse {
+        return hubRepository.findById(hubId).orElseThrow { NotFoundHubException() }.toResponse()
+    }
+
+    @Transactional(readOnly = true)
+    fun findHubsByIds(ids: List<UUID>): List<HubResponse> {
+        return hubRepository.findByIds(ids).map { it.toResponse() }
     }
 
     @Transactional

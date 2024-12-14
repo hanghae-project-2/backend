@@ -24,7 +24,7 @@ public class DeliveryEventService {
 
 	@Transactional
 	public void CreateDeliveryRoutes(CreateDeliveryEvent event) {
-		RouteResult result = hubService.findHubRoutesById(event.startHubId(), event.endHubId()).data();
+		RouteResult result = hubService.findHubRoutesById(event.startHubId(), event.endHubId());
 
 		Iterator<String> iterator = result.path().iterator();
 		String startHubName = iterator.next();

@@ -45,6 +45,10 @@ class HubRepositoryImpl(
         return hubJpaRepository.existsById(id)
     }
 
+    override fun findByIds(ids: List<UUID>): List<Hub> {
+        return hubJpaRepository.findAllById(ids)
+    }
+
     override fun findPageBy(
         pageRequest: Pageable,
         searchRequestDto: HubSearchRequestDto
