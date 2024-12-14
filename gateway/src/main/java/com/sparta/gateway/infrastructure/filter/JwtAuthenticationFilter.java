@@ -63,8 +63,8 @@ public class JwtAuthenticationFilter implements GlobalFilter {
                     .verifyWith(key)
                     .build().parseSignedClaims(token);
 
-            if (claimsJws.getPayload().get("user_id") != null) {
-                String userId = claimsJws.getPayload().get("user_id").toString();
+            if (claimsJws.getPayload().get("userId") != null) {
+                String userId = claimsJws.getPayload().get("userId").toString();
 
                 return authService.verifyUser(userId);
             } else {
