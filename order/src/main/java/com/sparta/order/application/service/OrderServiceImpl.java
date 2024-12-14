@@ -1,5 +1,6 @@
 package com.sparta.order.application.service;
 
+import com.sparta.order.application.event.CreateOrderEvent;
 import com.sparta.order.application.dto.request.OrderCreateRequestDto;
 import com.sparta.order.application.dto.request.OrderSearchRequestDto;
 import com.sparta.order.application.dto.request.OrderUpdateRequestDto;
@@ -13,6 +14,7 @@ import com.sparta.order.domain.model.Order;
 import com.sparta.order.domain.model.OrderStatus;
 import com.sparta.order.domain.repository.OrderRepository;
 import com.sparta.order.domain.service.OrderService;
+import com.sparta.order.infrastructure.message.producer.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
     private final CompanyClient companyClient;
     private final ProductClient productClient;
     private final DeliveryClient deliveryClient;
+    private final KafkaProducer kafkaProducer;
 
     //임시 변수 생성
     UUID deliveryId = UUID.randomUUID();
@@ -55,6 +58,11 @@ public class OrderServiceImpl implements OrderService {
         //TODO : 배송담당자 조회 (Feign Client)
 
         //TODO : create order 이벤트 발생?
+        CreateOrderEvent eventDto = CreateOrderEvent.builder()
+                        .orderId(order.getId())
+                                .productId(order.getProductId())
+                                        .quantity(order.getQuantity()).build();
+        kafkaProducer.send(eventDto);
 
         return OrderResponseDto.builder()
                 .deliveryId(deliveryId)
