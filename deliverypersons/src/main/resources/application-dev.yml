@@ -1,0 +1,152 @@
+server:
+  port: 19098
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: metrics, health, info
+  metrics:
+    tags:
+      application: delivery-persons-server
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      pool-name: hikari-pool
+      catalog: delivery-route
+      maximum-pool-size: 13
+      data-source-properties:
+        idleTimeout: 600000
+        maxLifetime: 1800000
+        minimumIdle: 5
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+      connection-test-query: select 1
+      auto-commit: true
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
+        show-sql: true
+        format_sql: true
+        globally_quoted_identifiers: true
+        globally_quoted_identifiers_skip_column_definitions: true
+  config:
+    import: classpath:application-key.yml
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: delivery-persons-server
+      auto-offset-reset: earliest
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.value.trusted.packages: com.sparta.deliverypersons.application.event
+    listener:
+      ack-mode: record
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
+      client:
+        config:
+          default:
+            connect-timeout: 5000
+            read-timeout: 5000
+            logger-level: HEADERS
+      circuitbreaker:
+        enabled: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 80
+        slow-call-duration-threshold:
+          seconds: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 100
+        register-health-indicator: true
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state:
+          seconds: 15
+  retry:
+    instances:
+      hubClient:
+        max-attempts: 3
+        wait-duration:
+          seconds: 1
+        retry-exceptions:
+          - com.sparta.deliverypersons.application.exception.FeignException
+        ignore-exceptions:
+          - jakarta.ws.rs.InternalServerErrorException
+      productClient:
+        max-attempts: 3
+        wait-duration:
+          seconds: 1
+        retry-exceptions:
+          - com.sparta.deliverypersons.application.exception.FeignException
+        ignore-exceptions:
+          - jakarta.ws.rs.InternalServerErrorException
+
+---
+
+springdoc:
+  use-fqn: true
+  cache:
+    disabled: true
+  api-docs:
+    path: /api-docs
+    groups:
+      enabled: true
+  swagger-ui:
+    path: /index.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+    groups-order: asc
+    display-request-duration: true
+    doc-expansion: none
+    disable-swagger-default-url: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+---
+
+logging:
+  level:
+    org.hibernate:
+      #      SQL: debug
+      SQL: error
+      type: error
+    com.zaxxer.hikari.HikariDataSource: error
+
+---
+
+eureka:
+  instance:
+    initial-status: up
+    prefer-ip-address: false
+    instance-id: delivery-route-server
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_NAME}:${EUREKA_PORT}/${EUREKA_HOST}/
+    region: ap-northeast-2

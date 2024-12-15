@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: delivery-persons-server
+  profiles:
+    active: dev
+  jackson:
+    date-format: 'yyyy-MM-dd'
+    time-zone: "Asia/Seoul"

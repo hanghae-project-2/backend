@@ -11,4 +11,12 @@ public class DeliveryPersonsController {
 
     private DeliveryPersonsService deliveryPersonsService;
 
+
+    // 배송 담당자 수정 api
+
+    // 배송 담당자 조회(단건) api
+
+    // 배송 담당자 조회(다건) api
+
+    // 배송 담당자 삭제 api
 }
