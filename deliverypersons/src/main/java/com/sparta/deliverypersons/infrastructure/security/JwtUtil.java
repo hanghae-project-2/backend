@@ -15,6 +15,7 @@ public class JwtUtil {
 
     private final Key key;
 
+    // TODO ${jwt.secret} <- 이 부분 jwt key 추가하고 수정해야함.
     public JwtUtil(@Value("${jwt.secret}") String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
@@ -29,11 +30,6 @@ public class JwtUtil {
         } catch (JwtException e) {
             throw new IllegalArgumentException("유효하지 않은 JWT 토큰입니다.");
         }
-    }
-
-    public boolean isMaster(Claims claims) {
-        String role = claims.get("role", String.class);
-        return role != null && role.equals("MASTER");
     }
 
     public boolean hasRequiredRole(Claims claims, List<String> requiredRoles) {

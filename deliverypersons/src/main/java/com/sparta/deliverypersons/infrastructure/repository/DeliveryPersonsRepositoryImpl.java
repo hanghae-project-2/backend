@@ -9,5 +9,4 @@ import org.springframework.stereotype.Repository;
 public class DeliveryPersonsRepositoryImpl implements DeliveryPersonsRepository {
 
     private final DeliveryPersonsJpaRepository deliveryPersonsJpaRepository;
-
 }

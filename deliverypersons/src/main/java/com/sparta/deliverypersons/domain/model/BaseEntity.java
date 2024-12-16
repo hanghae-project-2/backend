@@ -3,6 +3,7 @@ package com.sparta.deliverypersons.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,23 +14,22 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-
 @MappedSuperclass
 @Getter
+@NoArgsConstructor
 @EntityListeners(value = {AuditingEntityListener.class})
 public abstract class BaseEntity {
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @Comment("생성일")
     private LocalDateTime createdAt;
 
-
     @CreatedBy
     @Column(nullable = false, updatable = false)
     @Comment("생성자")
     private UUID createdBy;
-
 
     @LastModifiedDate
     @Column
@@ -37,12 +37,10 @@ public abstract class BaseEntity {
     @Comment("수정일")
     protected LocalDateTime updatedAt;
 
-
     @LastModifiedBy
     @Column
     @Comment("수정자")
     protected UUID updatedBy;
-
 
     @Column
     @Temporal(TemporalType.TIMESTAMP)
@@ -63,6 +61,4 @@ public abstract class BaseEntity {
         this.deletedBy = deletedBy;
     }
 
-    public BaseEntity() {
-    }
 }

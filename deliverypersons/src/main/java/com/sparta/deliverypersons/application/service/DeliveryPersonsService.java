@@ -9,6 +9,7 @@ import com.sparta.deliverypersons.infrastructure.security.JwtUtil;
 import com.sparta.deliverypersons.presentation.dto.request.UpdateDeliveryPersonRequest;
 import com.sparta.deliverypersons.presentation.dto.response.DeleteDeliveryPersonResponse;
 import com.sparta.deliverypersons.presentation.dto.response.DeliveryPersonResponse;
+import com.sparta.deliverypersons.presentation.dto.response.UpdateDeliveryPersonResponse;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -74,19 +75,15 @@ public class DeliveryPersonsService {
     }
 
     @Transactional
-    public void updateDeliveryPerson(UUID id, UpdateDeliveryPersonRequest request, String jwt) {
-        // JWT 파싱
+    public UpdateDeliveryPersonResponse updateDeliveryPerson(UUID id, UpdateDeliveryPersonRequest request, String jwt) {
         Claims claims = jwtUtil.parseToken(jwt);
 
-        // MASTER 권한 확인
-        if (!jwtUtil.isMaster(claims)) {
-            throw new CustomException("권한이 없습니다.", HttpStatus.FORBIDDEN);
+        if (!jwtUtil.hasRequiredRole(claims, List.of("MASTER"))) {
+            throw new CustomException("수정 권한이 없습니다.", HttpStatus.FORBIDDEN);
         }
-
 
         DeliveryPersons deliveryPerson = deliveryPersonsJpaRepository.findById(id)
                 .orElseThrow(() -> new CustomException("배송 담당자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-
 
         DeliveryType deliveryType;
         try {
@@ -95,13 +92,13 @@ public class DeliveryPersonsService {
             throw new CustomException("잘못된 배송 타입입니다: " + request.getType(), HttpStatus.BAD_REQUEST);
         }
 
-
         if (deliveryType != DeliveryType.HUB_DELIVERY && request.getHubId() == null) {
             throw new CustomException("허브 ID는 필수입니다.", HttpStatus.BAD_REQUEST);
         }
 
-
         deliveryPerson.update(request.getHubId(), deliveryType, UUID.fromString(claims.getSubject()));
+
+        return UpdateDeliveryPersonResponse.fromEntity(deliveryPerson.getHubId(), deliveryPerson.getType());
     }
 
     @Transactional(readOnly = true)
@@ -117,11 +114,9 @@ public class DeliveryPersonsService {
     public Page<DeliveryPersonResponse> getAllDeliveryPersons(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        // 배송 담당자 목록 조회 및 DTO 변환
         return deliveryPersonsJpaRepository.findAll(pageable)
                 .map(DeliveryPersonResponse::fromEntity);
     }
-
 
     @Transactional
     public DeleteDeliveryPersonResponse deleteDeliveryPerson(UUID id, String jwt) {
