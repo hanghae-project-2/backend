@@ -48,7 +48,7 @@ dependencies {
 
 
 	implementation 'org.springdoc:springdoc-openapi-ui:1.7.0' // Swagger UI
-
+	implementation 'org.springframework.kafka:spring-kafka:3.3.0'
 }
 
 dependencyManagement {
