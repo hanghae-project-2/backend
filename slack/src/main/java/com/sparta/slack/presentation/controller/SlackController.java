@@ -12,11 +12,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class SlackController {
 
-    private final SlackService slackService;
-
-    @PostMapping()
-    public String sendMessage() {
-        slackService.sendMessage("HI");
-        return "its done";
-    }
 }

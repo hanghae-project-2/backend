@@ -17,8 +17,7 @@ public class DeliveryEventConsumerImpl implements DeliveryEventConsumer {
     @Override
     @KafkaListener(topics = "created-delivery-event-slack", groupId = "slack-consumer-group", containerFactory = "kafkaListenerContainerFactory")
     public void consumeDeliveryEvent(SlackEvent event) {
-        System.out.println(event.deliveryAddress());
-        slackService.processSlack(event);
+        slackService.sendMessage(event);
     }
 
 }

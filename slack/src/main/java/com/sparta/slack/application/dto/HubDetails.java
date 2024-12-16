@@ -8,10 +8,6 @@ import java.util.UUID;
 
 public class HubDetails {
 
-    public record Request(@NotNull UUID startHubId, @NotNull String endHubId){
-
-    }
-
     @Getter
     public static class Response{
 

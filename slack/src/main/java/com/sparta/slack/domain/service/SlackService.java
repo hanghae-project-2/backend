@@ -1,10 +1,7 @@
 package com.sparta.slack.domain.service;
 
-import com.sparta.slack.application.dto.CompanyDetails;
-import com.sparta.slack.application.dto.HubDetails;
-import com.sparta.slack.application.dto.OrderDetails;
+import com.sparta.slack.application.dto.*;
 import com.sparta.slack.infrastructure.dto.SlackEvent;
-import com.sparta.slack.application.dto.UserDetails;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -12,11 +9,9 @@ import java.util.UUID;
 
 public interface SlackService {
 
-    void sendMessage(String text);
+    void sendMessage(SlackEvent slackEvent);
 
     HttpHeaders setHeadersForSlack(MediaType mediaType);
-
-    void processSlack(SlackEvent slackEvent);
 
     HubDetails.Response getHubOptimizationRouteById(UUID startHubId, UUID endHubId);
 
@@ -41,4 +36,8 @@ public interface SlackService {
     String createOrderIdMessage(UUID orderId);
 
     String createRecipientNameMessage(String recipientName);
+
+    String createStartHubMessage(UUID originHubId);
+
+    public HubInfo.Response getHubInfoById(UUID HubId);
 }
