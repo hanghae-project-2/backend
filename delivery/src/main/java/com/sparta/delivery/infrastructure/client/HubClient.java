@@ -21,4 +21,7 @@ public interface HubClient {
 
     @GetMapping("/hubs/batch")
     List<HubResponseDto> findHubsByIds(@RequestBody List<UUID> ids);
+
+    @GetMapping("/hubs/find/user/{userId}")
+    UUID findHubByUserId(@PathVariable UUID userId);
 }

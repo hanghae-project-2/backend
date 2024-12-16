@@ -31,7 +31,7 @@ public class OrderEventService {
 
         //TODO : feignClient로 배송담당자, 유저이름, 슬랙 ID 받아오기
         UUID deliveryPersonId = UUID.randomUUID();
-        UserResponseDto user = userClient.getUserById(UUID.randomUUID()).getData();
+        UserResponseDto user = userClient.getUserById(UUID.randomUUID());
 
         Delivery delivery = deliveryRepository.save(
                 Delivery.create(event, deliveryPersonId, user)
@@ -49,8 +49,7 @@ public class OrderEventService {
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
 
-        //TODO : USERID 받으면 수정
-        delivery.deleteDelivery(UUID.randomUUID());
+        delivery.deleteDelivery(target.userId());
 
         kafkaProducer.delete(target);
     }

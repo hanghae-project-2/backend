@@ -17,4 +17,5 @@ public interface OrderRepository{
 
     Page<Order> searchOrdersByCompanyIds(OrderSearchRequestDto requestDto, List<UUID> companyIds);
 
+    Optional<Order> findByCreatedByAndIsDeleteFalse(UUID userId);
 }

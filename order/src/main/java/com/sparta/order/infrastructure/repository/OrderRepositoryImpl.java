@@ -77,6 +77,11 @@ public class OrderRepositoryImpl implements OrderRepository {
         return new PageImpl<>(results, requestDto.getPageable(), totalCount);
     }
 
+    @Override
+    public Optional<Order> findByCreatedByAndIsDeleteFalse(UUID userId) {
+        return orderJpaRepository.findByCreatedByAndIsDeleteFalse(userId);
+    }
+
     private BooleanBuilder filterOrders(OrderSearchRequestDto requestDto) {
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         if (StringUtils.hasText(requestDto.searchValue())) {
