@@ -38,7 +38,4 @@ public abstract class DeliveryControllerDocs {
     @GetMapping("/deliveries/orders/{orderId}")
     public abstract UUID getDeliveryByOrderId(@PathVariable UUID orderId);
 
-    @DeleteMapping("/deliveries/orders/{orderId}")
-    public abstract UUID deleteDeliveryByOrderId(@PathVariable UUID orderId);
-
 }

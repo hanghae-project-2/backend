@@ -55,11 +55,6 @@ public class DeliveryController extends DeliveryControllerDocs {
         return deliveryService.getDeliveryByOrderId(orderId);
     }
 
-    @DeleteMapping("/orders/{orderId}")
-    @Override
-    public UUID deleteDeliveryByOrderId(@PathVariable UUID orderId) {
-        return deliveryService.deleteDeliveryByOrderId(orderId);
-    }
 
 
 }

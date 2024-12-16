@@ -113,9 +113,9 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
     private BooleanBuilder filterDeliveriesByHubIds(DeliverySearchRequestDto requestDto, List<UUID> hubIds) {
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         if ("ORIGIN_HUB_NAME".equals(requestDto.searchType())) {
-            booleanBuilder.and(delivery.originHubId.in(hubIds));
+            booleanBuilder.and(delivery.startHubId.in(hubIds));
         }else if ("DESTINATION_HUB_NAME".equals(requestDto.searchType())) {
-            booleanBuilder.and(delivery.destinationHubId.in(hubIds));
+            booleanBuilder.and(delivery.endHubId.in(hubIds));
         }
         return booleanBuilder;
     }

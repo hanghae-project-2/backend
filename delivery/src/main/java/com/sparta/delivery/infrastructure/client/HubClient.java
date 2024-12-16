@@ -12,9 +12,9 @@ public interface HubClient {
     @GetMapping("/hubs/search-by-name")
     List<HubResponseDto> findHubsByName(@RequestParam("name") String name);
 
-    @GetMapping("/hubs/{hubId}")
+    @GetMapping("/hubs/find/{hubId}")
     HubResponseDto findHubById(@PathVariable("hubId") UUID hubId);
 
-    @PostMapping("/hubs/batch")
+    @GetMapping("/hubs/batch")
     List<HubResponseDto> findHubsByIds(@RequestBody List<UUID> ids);
 }
