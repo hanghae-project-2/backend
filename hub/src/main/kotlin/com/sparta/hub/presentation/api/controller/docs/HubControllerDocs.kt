@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.GetMapping
@@ -38,7 +39,8 @@ abstract class HubControllerDocs {
     @PostMapping("/hubs")
     abstract fun registerHub(
         @RequestParam address: String,
-        @RequestParam hubName: String
+        @RequestParam hubName: String,
+        servletRequest: HttpServletRequest
     ): Response<UUID>
 
     @Operation(summary = "허브 간 경로 탐색", description = "전체 허브 간 경로를 탐색하여 결과를 등록하는 API 입니다.")
@@ -61,8 +63,10 @@ abstract class HubControllerDocs {
             )
         ]
     )
-    @PostMapping("/hubs/navigate")
-    abstract fun navigateHubRoutes(): Response<Unit>
+    @PatchMapping("/hubs/navigate")
+    abstract fun navigateHubRoutes(
+        servletRequest: HttpServletRequest
+    ): Response<Unit>
 
     @Operation(summary = "특정 허브 간 경로 탐색", description = "전달받은 허브 간 경로를 탐색하여 결과를 등록하는 API 입니다.")
     @ApiResponses(
@@ -135,7 +139,8 @@ abstract class HubControllerDocs {
     @PatchMapping("/hubs/{hubId}")
     abstract fun modifyHub(
         @PathVariable hubId: UUID,
-        @RequestBody request: HubRequest
+        @RequestBody request: HubRequest,
+        servletRequest: HttpServletRequest
     ): Response<UUID>
 
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -38,8 +39,14 @@ class HubRoute(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null
 
-    fun updateEstimatedInfo(estimatedSecond: Int, estimatedMeter: Int) {
+    fun updateEstimatedInfo(
+        estimatedSecond: Int,
+        estimatedMeter: Int,
+        updatedBy: String
+    ) {
         this.estimatedSecond = estimatedSecond
         this.estimatedMeter = estimatedMeter
+        this.updatedBy = UUID.fromString(updatedBy)
+        this.updatedAt = LocalDateTime.now()
     }
 }

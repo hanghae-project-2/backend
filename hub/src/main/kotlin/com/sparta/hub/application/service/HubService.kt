@@ -19,10 +19,10 @@ import com.sparta.hub.domain.model.HubRoute
 import com.sparta.hub.domain.repository.HubRepository
 import com.sparta.hub.domain.repository.HubRouteRepository
 import com.sparta.hub.infrastructure.redis.RedisService
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
@@ -60,23 +60,25 @@ class HubService(
     )
 
     @Transactional
-    fun registerHub(hubAddress: String, hubName: String): UUID {
+    fun registerHub(servletRequest: HttpServletRequest, hubAddress: String, hubName: String): UUID {
 
         val result = findLatitudeAndLongitude(hubAddress)
 
-        return hubRepository.save(
-            Hub(
-                name = hubName,
-                address = hubAddress,
-                latitude = result?.get("latitude") ?: throw UnableCalculateRouteException(),
-                longitude = result["longitude"] ?: throw UnableCalculateRouteException(),
-            )
-        ).id!!
+        val hub = Hub(
+            name = hubName,
+            address = hubAddress,
+            latitude = result?.get("latitude") ?: throw UnableCalculateRouteException(),
+            longitude = result["longitude"] ?: throw UnableCalculateRouteException(),
+            createdBy = servletRequest.getHeader("X-Authenticated-User-Id")
+        )
+
+        return hubRepository.save(hub).id!!
     }
 
     @Transactional
-    @Scheduled(cron = "0 0 0 * * *")
-    fun navigateHubRoutes() {
+//    TODO: 마스터 사용자 Id를 가지고 있어야 자동실행 가능
+//    @Scheduled(cron = "0 0 0 * * *")
+    fun navigateHubRoutes(servletRequest: HttpServletRequest) {
 
         val hubRoutes = hubRouteRepository.findAll()
         val hubs = hubRoutes.mapNotNull { it.startHub }.distinct()
@@ -95,14 +97,16 @@ class HubService(
                 val forwardHubRoute = hubRouteMap["${startHub.id}-${endHub.id}"].apply {
                     this?.updateEstimatedInfo(
                         forwardResult.estimatedSecond,
-                        forwardResult.estimatedMeter
+                        forwardResult.estimatedMeter,
+                        servletRequest.getHeader("X-Authenticated-User-Id")
                     )
                 }
 
                 val reverseHubRoute = hubRouteMap["${endHub.id}-${startHub.id}"].apply {
                     this?.updateEstimatedInfo(
                         reverseResult.estimatedSecond,
-                        reverseResult.estimatedMeter
+                        reverseResult.estimatedMeter,
+                        servletRequest.getHeader("X-Authenticated-User-Id")
                     )
                 }
 
@@ -169,7 +173,7 @@ class HubService(
     }
 
     @Transactional
-    fun modifyHub(hubId: UUID, hubRequestDto: HubRequestDto): UUID {
+    fun modifyHub(servletRequest: HttpServletRequest, hubId: UUID, hubRequestDto: HubRequestDto): UUID {
         val hub = hubRepository.findByIdOrNull(hubId) ?: throw NotFoundHubException()
 
         val latitudeAndLongitude = findLatitudeAndLongitude(hubRequestDto.address)
@@ -178,10 +182,16 @@ class HubService(
         val longitude = latitudeAndLongitude?.get("longitude")
 
         if (hubRequestDto.isDelete) {
-            hub.markAsDelete()
+            hub.markAsDelete(servletRequest.getHeader("X-Authenticated-User-Id"))
         }
-        hub.updatePosition(latitude, longitude)
-        hub.updateName(hubRequestDto.name)
+
+        hub.updateInfo(
+            latitude,
+            longitude,
+            hubRequestDto.name,
+            hubRequestDto.manager,
+            servletRequest.getHeader("X-Authenticated-User-Id")
+        )
 
         return hubRepository.save(hub).id!!
     }
@@ -189,6 +199,13 @@ class HubService(
     @Transactional(readOnly = true)
     fun existHub(hubId: UUID): Boolean {
         return hubRepository.existsById(hubId)
+    }
+
+    @Transactional(readOnly = true)
+    fun existHubAndCheckManager(hubId: UUID, userId: UUID): Boolean {
+        val hub = hubRepository.findByIdOrNull(hubId) ?: throw NotFoundHubException()
+
+        return hub.checkManager(userId)
     }
 
     @Transactional(readOnly = true)

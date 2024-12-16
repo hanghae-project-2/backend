@@ -10,4 +10,6 @@ public interface DeliveryRouteRepository {
 	List<DeliveryRoute> saveAll(List<DeliveryRoute> deliveryRoutes);
 
 	List<DeliveryRoute> findByDeliveryId(UUID deliveryId);
+
+	List<DeliveryRoute> findAll();
 }

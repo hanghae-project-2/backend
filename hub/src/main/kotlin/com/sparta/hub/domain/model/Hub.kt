@@ -35,21 +35,36 @@ class Hub(
     var longitude: Double? = longitude
         protected set
 
+    var manager: UUID? = null
+        protected set
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null
 
-    fun updatePosition(latitude: Double?, longitude: Double?) {
+    constructor(
+        name: String,
+        address: String,
+        latitude: Double,
+        longitude: Double,
+        createdBy: String
+    ) : this(name, address, latitude, longitude) {
+        super.createdBy(UUID.fromString(createdBy))
+    }
+
+    fun checkManager(manager: UUID): Boolean {
+        return this.manager == manager
+    }
+
+    fun updateInfo(latitude: Double?, longitude: Double?, name: String, manager: String, updatedBy: String) {
         this.latitude = latitude
         this.longitude = longitude
-    }
-
-    fun updateName(name: String) {
         this.name = name
+        this.manager = UUID.fromString(manager)
+        super.updatedBy(UUID.fromString(updatedBy))
     }
 
-    fun markAsDelete() {
-        this.isDelete = true
-        this.isPublic = false
+    fun markAsDelete(deletedBy: String) {
+        super.deletedBy(UUID.fromString(deletedBy))
     }
 }

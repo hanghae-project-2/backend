@@ -23,4 +23,9 @@ public class DeliveryRouteRepositoryImpl implements DeliveryRouteRepository {
 	public List<DeliveryRoute> findByDeliveryId(UUID deliveryId) {
 		return deliveryRouteJpaRepository.findByDeliveryId(deliveryId);
 	}
+
+	@Override
+	public List<DeliveryRoute> findAll() {
+		return deliveryRouteJpaRepository.findAll();
+	}
 }

@@ -9,7 +9,7 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
@@ -46,4 +46,19 @@ abstract class BaseEntity {
 
     var deletedBy: UUID? = null
         protected set
+
+    fun createdBy(createdBy: UUID) {
+        this.createdBy = createdBy
+    }
+
+    fun updatedBy(updatedBy: UUID) {
+        this.updatedBy = updatedBy
+    }
+
+    fun deletedBy(deletedBy: UUID) {
+        this.isDelete = true
+        this.isPublic = false
+        this.deletedBy = deletedBy
+        this.deletedAt = LocalDateTime.now()
+    }
 }

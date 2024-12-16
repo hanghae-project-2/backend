@@ -4,8 +4,11 @@ import com.sparta.deliveryroute.application.client.HubService;
 import com.sparta.deliveryroute.application.dto.response.DeliveryRouteResponseDto;
 import com.sparta.deliveryroute.application.dto.response.HubRouteResponseDto;
 import com.sparta.deliveryroute.domain.model.DeliveryRoute;
+import com.sparta.deliveryroute.domain.model.DeliveryStatus;
 import com.sparta.deliveryroute.domain.repository.DeliveryRouteRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +26,30 @@ public class DeliveryRouteService {
 	private final HubService hubService;
 
 	@Transactional
-	public void deleteByDeliveryId(UUID deliveryId) {
+	public void deleteByDeliveryId(HttpServletRequest request, UUID deliveryId) {
+
+		String userId = request.getHeader("X-Authenticated-User-Id");
+
 		List<DeliveryRoute> deliveryRouteList = deliverRouteRepository.findByDeliveryId(deliveryId);
 
-		deliveryRouteList.forEach(DeliveryRoute::markAsDelete);
+		deliveryRouteList.forEach(route -> route.markAsDelete(userId));
+
+		deliverRouteRepository.saveAll(deliveryRouteList);
+	}
+
+	@Transactional
+	@Scheduled(cron = "0 0 * * * *")
+	public void updateByDeliveryStatus() {
+
+		List<DeliveryRoute> deliveryRouteList = deliverRouteRepository.findAll();
+
+		deliveryRouteList.forEach(route -> {
+			if (route.getStatus().equals(DeliveryStatus.WAITING)) {
+				route.updateStatus(DeliveryStatus.IN_TRANSIT);
+			} else if (route.getStatus().equals(DeliveryStatus.IN_TRANSIT)) {
+				route.updateStatus(DeliveryStatus.ARRIVED);
+			}
+		});
 
 		deliverRouteRepository.saveAll(deliveryRouteList);
 	}
