@@ -56,6 +56,7 @@ class CompanyController(
         )
 
     @GetMapping("/{companyId}")
+    @RoleValidation("ANY_ROLE")
     override fun getCompany(
         @PathVariable companyId: UUID
     ): Response<CompanyResponse> =
@@ -66,6 +67,7 @@ class CompanyController(
         )
 
     @GetMapping("/search")
+    @RoleValidation("ANY_ROLE")
     override fun searchCompany(
         pageable: Pageable,
         request: CompanySearchRequest
