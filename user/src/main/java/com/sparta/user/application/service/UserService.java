@@ -1,6 +1,7 @@
 package com.sparta.user.application.service;
 
 import com.sparta.user.common.CustomException;
+import com.sparta.user.common.ErrorCode;
 import com.sparta.user.domain.User;
 import com.sparta.user.domain.UserRepository;
 import com.sparta.user.domain.UserRole;
@@ -27,9 +28,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtBlacklistService jwtBlacklistService;
-    private final JwtUtil jwtUtil;
-    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional(readOnly = true)
     public UserResponse getUserById(UUID id) {
@@ -48,7 +46,7 @@ public class UserService {
         User user = findUserById(id);
 
         if (user.getIsApproved()) {
-            throw new CustomException("사용자가 이미 승인되었습니다.", HttpStatus.BAD_REQUEST);
+            throw new CustomException(ErrorCode.USER_ALREADY_APPROVED);
         }
 
         user.approve(role, updatedBy);
@@ -61,7 +59,7 @@ public class UserService {
 
         if (request.getCurrentPassword() != null && request.getNewPassword() != null) {
             if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-                throw new CustomException("현재 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+                throw new CustomException(ErrorCode.INVALID_PASSWORD);
             }
             user.updatePassword(passwordEncoder.encode(request.getNewPassword()), updatedBy);
         }
@@ -78,7 +76,7 @@ public class UserService {
         User user = findUserById(id);
 
         if (UserRole.MASTER.equals(user.getRole())) {
-            throw new CustomException("MASTER 권한은 수정할 수 없습니다.", HttpStatus.BAD_REQUEST);
+            throw new CustomException(ErrorCode.MASTER_ROLE_CANNOT_BE_MODIFIED);
         }
 
         user.updateRole(newRole, updatedBy);
@@ -91,25 +89,26 @@ public class UserService {
         User user = findUserById(id);
 
         if (user.getIsDelete()) {
-            throw new CustomException("이미 삭제된 사용자입니다.", HttpStatus.BAD_REQUEST);
+            throw new CustomException(ErrorCode.USER_ALREADY_DELETED);
         }
 
         user.delete(deletedBy);
         userRepository.save(user);
 
-        List<String> tokens = jwtUtil.getAllActiveTokens(user.getUsername());
-        for (String redisKey : tokens) {
-            String token = (String) redisTemplate.opsForValue().get(redisKey);
-            if (token != null && jwtUtil.validateToken(token)) {
-                String tokenType = jwtUtil.getTokenType(token);
-                boolean isAccessToken = "access".equals(tokenType);
-                jwtBlacklistService.addToBlacklist(token, jwtUtil.getRemainingExpiration(token), isAccessToken);
-            }
-        }
+//        List<String> tokens = jwtUtil.getAllActiveTokens(user.getUsername());
+//        for (String redisKey : tokens) {
+//            String token = (String) redisTemplate.opsForValue().get(redisKey);
+//            if (token != null && jwtUtil.validateToken(token)) {
+//                String tokenType = jwtUtil.getTokenType(token);
+//                boolean isAccessToken = "access".equals(tokenType);
+//                jwtBlacklistService.addToBlacklist(token, jwtUtil.getRemainingExpiration(token), isAccessToken);
+//            }
+//        }
     }
 
+    @Transactional(readOnly = true)
     public User findUserById(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new CustomException("사용자를 찾을 수 없습니다. ID: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 }

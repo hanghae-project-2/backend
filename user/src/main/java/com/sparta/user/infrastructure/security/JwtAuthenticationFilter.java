@@ -1,6 +1,6 @@
 package com.sparta.user.infrastructure.security;
 
-import com.sparta.user.application.service.JwtBlacklistService;
+import com.sparta.user.infrastructure.service.JwtBlacklistService;
 import io.jsonwebtoken.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

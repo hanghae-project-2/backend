@@ -1,5 +1,6 @@
 package com.sparta.user.application.service;
 
+import com.sparta.user.infrastructure.service.JwtBlacklistService;
 import com.sparta.user.presentation.dto.response.AuthResponse;
 import com.sparta.user.presentation.dto.request.SignInRequest;
 import com.sparta.user.presentation.dto.request.SignUpRequest;

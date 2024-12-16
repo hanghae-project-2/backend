@@ -9,6 +9,7 @@ import com.sparta.user.presentation.dto.request.UpdateUserRoleRequest;
 import com.sparta.user.presentation.dto.request.UserApprovalRequest;
 import com.sparta.user.presentation.dto.response.UserResponse;
 import com.sparta.user.presentation.response.Response;
+import com.sparta.user.presentation.response.ResponseMessage;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -65,7 +66,7 @@ public class UserController {
         return new Response<>(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
-                "승인 및 권한이 부여되었습니다."
+                ResponseMessage.USER_APPROVED_SUCCESS.getMessage()
         );
     }
 
@@ -84,7 +85,7 @@ public class UserController {
         return new Response<>(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
-                "회원 정보 수정 성공."
+                ResponseMessage.USER_UPDATE_SUCCESS.getMessage()
         );
     }
 
@@ -104,7 +105,7 @@ public class UserController {
         return new Response<>(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
-                "권한 수정 성공."
+                ResponseMessage.ROLE_UPDATE_SUCCESS.getMessage()
         );
     }
 
@@ -118,7 +119,7 @@ public class UserController {
         return new Response<>(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
-                "회원 삭제 성공."
+                ResponseMessage.USER_DELETE_SUCCESS.getMessage()
         );
     }
 }
