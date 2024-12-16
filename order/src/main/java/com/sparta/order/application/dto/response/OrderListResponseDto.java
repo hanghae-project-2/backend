@@ -18,11 +18,11 @@ public record OrderListResponseDto(
         LocalDateTime updatedAt
 
 ) {
-    public static OrderListResponseDto from(Order order, CompanyResponseDto recipientCompany, ProductResponseDto product) {
+    public static OrderListResponseDto from(Order order, CompanyResponseDto recipientCompany, ProductInfoResponseDto product) {
         return new OrderListResponseDto(
                 order.getId(),
                 order.getProductId(),
-                product.productName(),
+                product.name(),
                 order.getQuantity(),
                 order.getRecipientCompanyId(),
                 recipientCompany.companyName(),

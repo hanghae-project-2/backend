@@ -38,8 +38,8 @@ public class DeliveryServiceImpl implements DeliveryService {
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
 
-        HubResponseDto originHub = hubClient.findHubById(delivery.getOriginHubId());
-        HubResponseDto destinationHub = hubClient.findHubById(delivery.getDestinationHubId());
+        HubResponseDto originHub = hubClient.findHubById(delivery.getStartHubId());
+        HubResponseDto destinationHub = hubClient.findHubById(delivery.getEndHubId());
 
         List<DeliveryRouteResponseDto> deliveryRoutes = deliveryRouteClient.getDeliveryRoutesByDeliveryId(deliveryId);
 
@@ -82,18 +82,18 @@ public class DeliveryServiceImpl implements DeliveryService {
     public PageResponseDto<DeliveryListResponseDto> getDeliveries(DeliverySearchRequestDto requestDto) {
         Page<Delivery> deliveries = findDeliveries(requestDto);
 
-        List<UUID> originHubIds = deliveries.map(Delivery::getOriginHubId).stream().distinct().toList();
+        List<UUID> originHubIds = deliveries.map(Delivery::getStartHubId).stream().distinct().toList();
         List<HubResponseDto> originHubs = hubClient.findHubsByIds(originHubIds);
 
-        List<UUID> destinationHubIds = deliveries.map(Delivery::getDestinationHubId).stream().distinct().toList();
+        List<UUID> destinationHubIds = deliveries.map(Delivery::getEndHubId).stream().distinct().toList();
         List<HubResponseDto> destinationHubs = hubClient.findHubsByIds(destinationHubIds);
 
         Map<UUID, HubResponseDto> originHubMap = originHubs.stream().collect(Collectors.toMap(HubResponseDto::hubId, c -> c));
         Map<UUID, HubResponseDto> destinationHubMap = destinationHubs.stream().collect(Collectors.toMap(HubResponseDto::hubId, c -> c));
 
         Page<DeliveryListResponseDto> results = deliveries.map(delivery -> {
-            HubResponseDto originHub = originHubMap.get(delivery.getOriginHubId());
-            HubResponseDto destinationHub = destinationHubMap.get(delivery.getDestinationHubId());
+            HubResponseDto originHub = originHubMap.get(delivery.getStartHubId());
+            HubResponseDto destinationHub = destinationHubMap.get(delivery.getEndHubId());
             return DeliveryListResponseDto.from(delivery, originHub, destinationHub);
         });
 

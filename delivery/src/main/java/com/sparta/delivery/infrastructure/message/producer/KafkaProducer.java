@@ -17,13 +17,19 @@ public class KafkaProducer {
 
     public void send(CreateDeliveryEvent event) {
 
-        DeliveryRouteEvent deliveryRoute = DeliveryRouteEvent.builder()
-                        .deliveryId(event.deliveryId())
-                                .endHubId(event.endHubId())
-                                        .startHubId(event.startHubId()).build();
+        DeliveryRouteEvent deliveryRoute = new DeliveryRouteEvent(
+                event.deliveryId(), event.startHubId(), event.endHubId()
+        );
 
-        //TODO: 추후 변수 생기면 코드 추가
-        SlackEvent slack = SlackEvent.builder().build();
+        SlackEvent slack = new SlackEvent(
+                event.recipientSlackId(),
+                event.deliveryAddress(),
+                event.deliveryPersonId(),
+                event.recipientName(),
+                event.startHubId(),
+                event.endHubId(),
+                event.orderId()
+        );
 
         kafkaTemplate.send(DELIVERY_ROUTE_TOPIC, deliveryRoute);
         kafkaTemplate.send(SLACK_TOPIC, slack);

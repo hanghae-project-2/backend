@@ -35,17 +35,20 @@ public class OrderServiceImpl implements OrderService {
     private final DeliveryClient deliveryClient;
     private final KafkaProducer kafkaProducer;
 
-    //임시 변수 생성
-    UUID deliveryId = UUID.randomUUID();
 
     @Override
     public OrderResponseDto createOrder(OrderCreateRequestDto request) {
 
-        ProductResponseDto product = productClient.checkAmount(request.productId(), request.quantity());
+
+        ProductInfoResponseDto product = productClient.findProductById(request.productId()).getData();
+
+        if (product.amount() < request.quantity()){
+            throw new OrderException(Error.OUT_OF_STOCK);
+        }
 
         Order order = orderRepository.save(
             Order.builder()
-                    .productId(product.productId())
+                    .productId(request.productId())
                     .status(OrderStatus.RECEIVED)
                     .totalPrice(request.price()* request.quantity())
                     .specialRequests(request.specialRequests())
@@ -55,14 +58,13 @@ public class OrderServiceImpl implements OrderService {
                     .build()
         );
 
-        //TODO : 배송담당자 조회 (Feign Client)
+        CompanyResponseDto recipientCompany = companyClient.findCompanyById(order.getRecipientCompanyId());
+        CompanyResponseDto requestCompany = companyClient.findCompanyById(product.companyId());
 
-        //TODO : create order 이벤트 발생?
-        CreateOrderEvent eventDto = CreateOrderEvent.builder()
-                        .orderId(order.getId())
-                                .productId(order.getProductId())
-                                        .quantity(order.getQuantity()).build();
+        CreateOrderEvent eventDto = CreateOrderEvent.from(order, product, recipientCompany, requestCompany);
         kafkaProducer.send(eventDto);
+
+        UUID deliveryId = deliveryClient.getDeliveryByOrderId(order.getId());
 
         return OrderResponseDto.builder()
                 .deliveryId(deliveryId)
@@ -97,8 +99,8 @@ public class OrderServiceImpl implements OrderService {
         );
 
         CompanyResponseDto recipientCompany = companyClient.findCompanyById(order.getRecipientCompanyId());
-        ProductInfoResponseDto product = productClient.findProductById(order.getProductId());
-        CompanyResponseDto requestCompany = companyClient.findCompanyById(product.requestCompanyId());
+        ProductInfoResponseDto product = productClient.findProductById(order.getProductId()).getData();
+        CompanyResponseDto requestCompany = companyClient.findCompanyById(product.companyId());
         UUID deliveryId = deliveryClient.getDeliveryByOrderId(orderId);
 
         return OrderDetailResponseDto.from(order, recipientCompany,requestCompany ,product, deliveryId);
@@ -113,15 +115,15 @@ public class OrderServiceImpl implements OrderService {
         List<CompanyResponseDto> recipientCompanies = companyClient.findCompaniesByIds(recipientCompanyIds);
 
         List<UUID> productIds = orders.map(Order::getProductId).stream().distinct().toList();
-        List<ProductResponseDto> products = productClient.findProductsByIds(productIds);
+        List<ProductInfoResponseDto> products = productClient.findProductsByIds(productIds);
 
         // 응답값 반환
         Map<UUID, CompanyResponseDto> recipientCompanyMap = recipientCompanies.stream().collect(Collectors.toMap(CompanyResponseDto::companyId, c -> c));
-        Map<UUID, ProductResponseDto> productMap = products.stream().collect(Collectors.toMap(ProductResponseDto::productId, p -> p));
+        Map<UUID, ProductInfoResponseDto> productMap = products.stream().collect(Collectors.toMap(ProductInfoResponseDto::productId, p -> p));
 
         Page<OrderListResponseDto> results = orders.map(order -> {
             CompanyResponseDto recipientCompany = recipientCompanyMap.get(order.getRecipientCompanyId());
-            ProductResponseDto product = productMap.get(order.getProductId());
+            ProductInfoResponseDto product = productMap.get(order.getProductId());
             return OrderListResponseDto.from(order, recipientCompany, product);
         });
 
