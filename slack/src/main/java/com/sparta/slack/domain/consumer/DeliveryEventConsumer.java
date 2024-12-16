@@ -1,6 +1,6 @@
 package com.sparta.slack.domain.consumer;
 
-import com.sparta.slack.application.dto.SlackEvent;
+import com.sparta.slack.infrastructure.dto.SlackEvent;
 
 public interface DeliveryEventConsumer {
 

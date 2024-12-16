@@ -1,8 +1,9 @@
-package com.sparta.slack.application.dto;
+package com.sparta.slack.infrastructure.dto;
 
 import java.util.UUID;
 
 public record SlackEvent(UUID recipientSlackId,
+                         UUID orderId,
                          String deliveryAddress,
                          UUID deliveryPersonId,
                          String recipientName,
