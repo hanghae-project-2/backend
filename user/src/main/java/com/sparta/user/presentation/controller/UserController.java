@@ -2,6 +2,7 @@ package com.sparta.user.presentation.controller;
 
 import com.sparta.user.application.service.UserService;
 import com.sparta.user.common.CustomException;
+import com.sparta.user.common.ErrorCode;
 import com.sparta.user.domain.UserRole;
 import com.sparta.user.infrastructure.security.CustomUserDetailsImpl;
 import com.sparta.user.presentation.dto.request.UpdateUserRequest;
@@ -77,7 +78,7 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetailsImpl userDetails) {
 
         if (!id.equals(userDetails.getId()) && !UserRole.MASTER.equals(userDetails.getRole())) {
-            throw new CustomException("자신의 정보 또는 MASTER 권한만 수정할 수 있습니다.", HttpStatus.FORBIDDEN);
+            throw new CustomException(ErrorCode.SELF_OR_MASTER_ACCESS_REQUIRED);
         }
 
         userService.updateUser(id, request, userDetails.getUsername());
@@ -97,7 +98,7 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetailsImpl userDetails) {
 
         if (!UserRole.MASTER.equals(userDetails.getRole())) {
-            throw new CustomException("MASTER 권한이 있어야 이 작업을 수행할 수 있습니다.", HttpStatus.FORBIDDEN);
+            throw new CustomException(ErrorCode.MASTER_ACCESS_REQUIRED);
         }
 
         userService.updateUserRole(id, request.getRole(), userDetails.getUsername());

@@ -22,7 +22,7 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       pool-name: hikari-pool
-      catalog: delivery-route
+      catalog: user
       maximum-pool-size: 13
       data-source-properties:
         idleTimeout: 600000

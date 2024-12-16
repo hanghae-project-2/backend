@@ -1,5 +1,6 @@
 package com.sparta.user.application.service;
 
+import com.sparta.user.common.ErrorCode;
 import com.sparta.user.infrastructure.service.JwtBlacklistService;
 import com.sparta.user.presentation.dto.response.AuthResponse;
 import com.sparta.user.presentation.dto.request.SignInRequest;
@@ -41,11 +42,11 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Username을 찾을 수 없습니다."));
 
         if (user.getIsDelete()) {
-            throw new CustomException("삭제된 계정입니다.", HttpStatus.FORBIDDEN);
+            throw new CustomException(ErrorCode.ACCOUNT_DELETED);
         }
 
         if (!user.getIsApproved()) {
-            throw new CustomException("승인되지 않은 계정입니다.", HttpStatus.FORBIDDEN);
+            throw new CustomException(ErrorCode.ACCOUNT_NOT_APPROVED);
         }
 
         return jwtUtil.createAccessToken(user);
@@ -78,11 +79,11 @@ public class AuthService {
     public void createUser(final SignUpRequest request) {
 
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new CustomException("중복된 Username", HttpStatus.BAD_REQUEST);
+            throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
         }
 
         if (userRepository.findBySlackId(request.getSlackId()).isPresent()) {
-            throw new CustomException("중복된 SlackId", HttpStatus.BAD_REQUEST);
+            throw new CustomException(ErrorCode.DUPLICATE_SLACK_ID);
         }
 
         User user = User.create(

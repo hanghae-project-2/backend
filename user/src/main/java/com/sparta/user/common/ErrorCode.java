@@ -11,6 +11,8 @@ public enum ErrorCode {
     USER_ALREADY_DELETED("이미 삭제된 사용자입니다.", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD("현재 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
     MASTER_ROLE_CANNOT_BE_MODIFIED("MASTER 권한은 수정할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    MASTER_ACCESS_REQUIRED("MASTER 권한이 있어야 이 작업을 수행할 수 있습니다.", HttpStatus.FORBIDDEN),
+    SELF_OR_MASTER_ACCESS_REQUIRED("자신의 정보 또는 MASTER 권한만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
     ACCOUNT_DELETED("삭제된 계정입니다.", HttpStatus.FORBIDDEN),
     ACCOUNT_NOT_APPROVED("승인되지 않은 계정입니다.", HttpStatus.FORBIDDEN),
     DUPLICATE_USERNAME("중복된 Username입니다.", HttpStatus.BAD_REQUEST),
