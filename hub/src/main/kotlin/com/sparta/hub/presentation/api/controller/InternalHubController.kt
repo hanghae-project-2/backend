@@ -30,7 +30,7 @@ class InternalHubController(
         @RequestParam hubId: UUID,
         @RequestParam userId: UUID
     ): Boolean =
-        hubService.existHub(hubId, userId)
+        hubService.existHubAndCheckManager(hubId, userId)
 
     @GetMapping("/hubs/company/{hubId}")
     fun existHub(

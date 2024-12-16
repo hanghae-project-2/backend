@@ -37,7 +37,7 @@ class CompanyService(
         if (role.equals("MASTER")) {
             hubService.existHub(hubId).takeIf { it } ?: throw NotFoundHubException()
         } else {
-            hubService.existHub(hubId, createdBy).takeIf { it } ?: throw NotFoundHubException()
+            hubService.existHubAndCheckManager(hubId, createdBy).takeIf { it } ?: throw NotFoundHubException()
         }
 
         return companyRepository.save(request.toEntity(createdBy)).id
@@ -57,11 +57,12 @@ class CompanyService(
             }
 
             "HUB_ADMIN" -> {
-                hubService.existHub(company.hubId, userId).takeIf { it } ?: throw NotFoundHubException()
+                hubService.existHubAndCheckManager(company.hubId, userId).takeIf { it } ?: throw NotFoundHubException()
             }
 
             "COMPANY_ADMIN" -> {
-                company.createdBy?.equals(UUID.fromString(userId)) ?: throw AccessDeniedException()
+                company.checkManager(userId).takeIf { it } ?: throw AccessDeniedException()
+                hubService.existHub(company.hubId).takeIf { it } ?: throw NotFoundHubException()
                 request.isDelete.takeIf { it } ?: throw AccessDeniedException()
             }
         }
@@ -70,6 +71,7 @@ class CompanyService(
             request.name,
             request.type,
             request.address,
+            request.manager,
             userId,
         )
 

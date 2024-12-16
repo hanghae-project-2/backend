@@ -189,6 +189,7 @@ class HubService(
             latitude,
             longitude,
             hubRequestDto.name,
+            hubRequestDto.manager,
             servletRequest.getHeader("X-Authenticated-User-Id")
         )
 
@@ -201,10 +202,10 @@ class HubService(
     }
 
     @Transactional(readOnly = true)
-    fun existHub(hubId: UUID, userId: UUID): Boolean {
+    fun existHubAndCheckManager(hubId: UUID, userId: UUID): Boolean {
         val hub = hubRepository.findByIdOrNull(hubId) ?: throw NotFoundHubException()
 
-        return hub.checkCreatedBy(userId)
+        return hub.checkManager(userId)
     }
 
     @Transactional(readOnly = true)

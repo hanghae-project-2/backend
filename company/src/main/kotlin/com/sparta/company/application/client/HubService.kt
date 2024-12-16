@@ -7,6 +7,6 @@ interface HubService {
 
     fun existHub(hubId: UUID): Boolean
 
-    fun existHub(hubId: UUID, userId: String): Boolean
+    fun existHubAndCheckManager(hubId: UUID, userId: String): Boolean
 
 }

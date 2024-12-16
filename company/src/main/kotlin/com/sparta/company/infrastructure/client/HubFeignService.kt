@@ -22,7 +22,7 @@ interface HubFeignService : HubService {
 
     @Retry(name = "hub")
     @GetMapping("/hubs/company")
-    override fun existHub(
+    override fun existHubAndCheckManager(
         @RequestParam hubId: UUID,
         @RequestParam userId: String,
     ): Boolean

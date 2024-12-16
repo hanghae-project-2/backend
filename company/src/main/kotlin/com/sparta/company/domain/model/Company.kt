@@ -35,6 +35,9 @@ class Company(
     var address: String = address
         protected set
 
+    var manager: UUID? = null
+        protected set
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID()
@@ -49,11 +52,17 @@ class Company(
         this.createdBy = UUID.fromString(createdBy)
     }
 
-    fun updateInfo(name: String, type: String, address: String, updatedBy: String) {
+    fun checkManager(manager: String): Boolean {
+        return this.manager == UUID.fromString(manager)
+    }
+
+    fun updateInfo(name: String, type: String, address: String, manager: String, updatedBy: String) {
         this.name = name
         this.type = CompanyType.valueOf(type)
         this.address = address
+        this.manager = UUID.fromString(manager)
         this.updatedBy = UUID.fromString(updatedBy)
+        this.updatedAt = LocalDateTime.now()
     }
 
     fun markAsDelete(deletedBy: String) {

@@ -29,7 +29,7 @@ class HubFeignServiceFallbackFactory : FallbackFactory<HubFeignService> {
                 }
             }
 
-            override fun existHub(hubId: UUID, userId: String): Boolean {
+            override fun existHubAndCheckManager(hubId: UUID, userId: String): Boolean {
                 when (cause) {
                     is CallNotPermittedException -> {
                         throw CircuitBreakerOpenException()
