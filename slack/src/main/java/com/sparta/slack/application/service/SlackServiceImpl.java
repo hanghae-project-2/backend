@@ -1,12 +1,15 @@
 package com.sparta.slack.application.service;
 
 import com.sparta.slack.application.dto.*;
+import com.sparta.slack.domain.model.Slack;
+import com.sparta.slack.domain.repository.SlackRepository;
 import com.sparta.slack.domain.service.SlackService;
 import com.sparta.slack.infrastructure.client.CompanyClient;
 import com.sparta.slack.infrastructure.client.HubClient;
 import com.sparta.slack.infrastructure.client.OrderClient;
 import com.sparta.slack.infrastructure.client.UserClient;
 import com.sparta.slack.infrastructure.dto.SlackEvent;
+import com.sparta.slack.infrastructure.repository.SlackJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +33,7 @@ public class SlackServiceImpl implements SlackService {
     public final UserClient userClient;
     public final OrderClient orderClient;
     public final CompanyClient companyClient;
+    private final SlackRepository slackRepository;
 
     @Value("${slack.webhook.url}")
     public String slackWebhookUrl;
@@ -148,7 +152,6 @@ public class SlackServiceImpl implements SlackService {
         return userClient.getUserById(userId);
     }
 
-
     @Override
     public HubDetails.Response getHubOptimizationRouteById(UUID startHubId, UUID endHubId){
         return hubClient.findHubRoutesByName(startHubId, endHubId);
@@ -157,9 +160,7 @@ public class SlackServiceImpl implements SlackService {
     @Override
     public void sendMessage(SlackEvent slackEvent) {
         HttpHeaders headers = setHeadersForSlack(APPLICATION_JSON);
-
         String requestBody = "{" + generateMessage(slackEvent) + "}";
-
         HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
 
         ResponseEntity<String> response = restTemplate.postForEntity(slackWebhookUrl, entity, String.class);
@@ -170,8 +171,6 @@ public class SlackServiceImpl implements SlackService {
             log.error("slack 전송 실패");
         }
     }
-
-
 
 
 }
