@@ -15,8 +15,7 @@ public class JwtUtil {
 
     private final Key key;
 
-    // TODO ${jwt.secret} <- 이 부분 jwt key 추가하고 수정해야함.
-    public JwtUtil(@Value("${jwt.secret}") String secret) {
+    public JwtUtil(@Value("${service.jwt.secret-key}") String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
