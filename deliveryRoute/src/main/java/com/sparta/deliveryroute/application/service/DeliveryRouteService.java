@@ -6,7 +6,6 @@ import com.sparta.deliveryroute.application.dto.response.HubRouteResponseDto;
 import com.sparta.deliveryroute.domain.model.DeliveryRoute;
 import com.sparta.deliveryroute.domain.model.DeliveryStatus;
 import com.sparta.deliveryroute.domain.repository.DeliveryRouteRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -26,9 +25,7 @@ public class DeliveryRouteService {
 	private final HubService hubService;
 
 	@Transactional
-	public void deleteByDeliveryId(HttpServletRequest request, UUID deliveryId) {
-
-		String userId = request.getHeader("X-Authenticated-User-Id");
+	public void deleteByDeliveryId(UUID userId, UUID deliveryId) {
 
 		List<DeliveryRoute> deliveryRouteList = deliverRouteRepository.findByDeliveryId(deliveryId);
 
