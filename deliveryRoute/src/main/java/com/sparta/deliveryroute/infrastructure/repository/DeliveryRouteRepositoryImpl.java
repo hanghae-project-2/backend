@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -16,5 +17,10 @@ public class DeliveryRouteRepositoryImpl implements DeliveryRouteRepository {
 	@Override
 	public List<DeliveryRoute> saveAll(List<DeliveryRoute> deliveryRoutes) {
 		return deliveryRouteJpaRepository.saveAll(deliveryRoutes);
+	}
+
+	@Override
+	public List<DeliveryRoute> findByDeliveryId(UUID deliveryId) {
+		return deliveryRouteJpaRepository.findByDeliveryId(deliveryId);
 	}
 }

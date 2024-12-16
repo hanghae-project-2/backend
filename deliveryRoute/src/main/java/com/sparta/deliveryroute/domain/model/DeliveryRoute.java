@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static com.sparta.deliveryroute.domain.model.DeliveryStatus.WAITING;
@@ -67,6 +68,12 @@ public class DeliveryRoute extends BaseEntity {
 
 	public void updateStatus(DeliveryStatus newStatus) {
 		this.status = newStatus;
+	}
+
+	public void markAsDelete() {
+		this.isDelete = true;
+		this.isPublic = false;
+		this.deletedAt = LocalDateTime.now();
 	}
 
 }

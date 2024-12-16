@@ -48,17 +48,6 @@ class HubController(
             hubService.navigateHubRoutes()
         )
 
-    @GetMapping("/routes/id")
-    override fun findHubRoutesById(
-        @RequestParam startHubId: UUID,
-        @RequestParam endHubId: UUID
-    ): Response<RouteResult> =
-        Response(
-            HttpStatus.OK.value(),
-            HttpStatus.OK.reasonPhrase,
-            hubService.getOptimalHubRoutes(startHubId, endHubId)
-        )
-
     @GetMapping("/routes/name")
     override fun findHubRoutesByName(
         @RequestParam startHubName: String,

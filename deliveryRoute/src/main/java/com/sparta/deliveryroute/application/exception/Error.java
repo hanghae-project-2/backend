@@ -16,6 +16,7 @@ public enum Error {
 	NOT_FOUND_COMPANY(HttpStatus.NOT_FOUND, "업체를 찾을 수 없습니다."),
 	INCORRECT_COMPANY_TYPE(HttpStatus.BAD_REQUEST, "잘못된 업체 타입입니다."),
 
+	NOT_FOUND_DELIVERY_ROUTE(HttpStatus.NOT_FOUND, "배송 경로를 찾을 수 없습니다."),
 	INCORRECT_DELIVERY_TYPE(HttpStatus.BAD_REQUEST, "잘못된 배송 타입입니다."),
 
 	CIRCUIT_BREAKER_OPEN(HttpStatus.BAD_REQUEST, "서비스가 일시적으로 사용 불가능합니다."),

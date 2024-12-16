@@ -17,6 +17,6 @@ public class DeliveryEventConsumer {
 	@KafkaListener(topics = CREATED_DELIVERY_EVENT,
 			properties = "spring.json.value.default.type=com.sparta.deliveryroute.application.event.CreateDeliveryEvent")
 	public void handleCreateDeliveryEvent(CreateDeliveryEvent event) {
-		eventHandler.CreateDeliveryRoutes(event);
+		eventHandler.createDeliveryRoutes(event);
 	}
 }
