@@ -2,6 +2,7 @@ package com.sparta.deliverypersons.common;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -12,13 +13,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // CustomException
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<String> handleCustomException(CustomException ex) {
-        return ResponseEntity.status(ex.getStatus()).body(ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleCustomException(CustomException ex) {
+        ErrorCode errorCode = ex.getErrorCode();
+        return ResponseEntity.status(errorCode.getStatus()).body(
+                new ErrorResponse(
+                        errorCode.getStatus().value(),
+                        errorCode.getStatus().getReasonPhrase(),
+                        errorCode.getMessage()
+                )
+        );
     }
 
-    // Validation
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -28,11 +34,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
-    // ETC Exception
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGlobalException(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                "예상치 못한 오류가 발생했습니다. : " + ex.getMessage()
+                new ErrorResponse(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                        "예상치 못한 오류가 발생했습니다. : " + ex.getMessage()
+                )
         );
     }
 }

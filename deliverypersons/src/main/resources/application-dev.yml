@@ -11,6 +11,8 @@ management:
       application: delivery-persons-server
 
 spring:
+  application:
+    name: delivery-persons-server
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -74,6 +76,9 @@ spring:
             logger-level: HEADERS
       circuitbreaker:
         enabled: true
+  jackson:
+    date-format: 'yyyy-MM-dd'
+    time-zone: "Asia/Seoul"
 
 resilience4j:
   circuitbreaker:

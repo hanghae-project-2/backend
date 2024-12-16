@@ -1,6 +1,7 @@
 package com.sparta.deliverypersons.application.service;
 
 import com.sparta.deliverypersons.common.CustomException;
+import com.sparta.deliverypersons.common.ErrorCode;
 import com.sparta.deliverypersons.domain.model.DeliveryPersons;
 import com.sparta.deliverypersons.domain.model.DeliveryType;
 import com.sparta.deliverypersons.infrastructure.messaging.producer.DeliveryEventProducer;
@@ -15,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,22 +35,22 @@ public class DeliveryPersonsService {
         int maxSequence = deliveryPersonsJpaRepository.findMaxSequence();
         int newSequence = 0;
 
-        // creatDelivery 이벤트에서 어떤 인자를 수신하는지 확인 필요..
+        // 1. creatDelivery 이벤트에서 어떤 인자를 수신하는지 확인 필요합니다.
 
 
 
-        // 어떤 기준으로 허브, 업체 담당을 배정해줄건지?
+        // 2. 어떤 기준으로 허브, 업체 담당을 배정해줄건지?
         // 또한 어떤 기준으로 해당 유저를 배정할건지?
-        // 1. 해당 유저의 담당 권한(HUB, COMPANY)이 이미 배정되어 있으면 그거에 따라서 가까운 허브 혹은 업체로 배정하기
-        // 2. 해당 유저의 담당 권한이 아직 없다면 어떠한 기준에 따라 담당 권한(HUB, COMPANY) 배정하기
+        // 2.1. 해당 유저의 담당 권한(HUB, COMPANY)이 이미 배정되어 있으면 그거에 따라서 가까운 허브 혹은 업체로 배정하기
+        // 2.2. 해당 유저의 담당 권한이 아직 없다면 어떠한 기준에 따라 담당 권한(HUB, COMPANY) 배정하기
 
 
 
-        // 시퀀스를 체크해서 각 업체, 허브 담당자 별로 최대 10번까지만 넣어주는 로직 필요..
+        // 3. 시퀀스를 체크해서 각 업체, 허브 담당자 별로 최대 10번까지만 넣어주는 로직 필요
 
 
 
-        // 현재 위치 기반 가까운 사람으로 담당 허브 ID 배정해주는? 로직 필요
+        // 4. 현재 위치 기반 가까운 사람으로 담당 허브 ID 배정해주는 로직 필요
 
 
 
@@ -64,7 +64,7 @@ public class DeliveryPersonsService {
 
 
 
-        // 배달담당자 생성 완료시 이벤트 발행해야하나? 어떤걸 발행하나?
+        // 배달담당자 생성 완료시 이떤 이벤트를 발행해야하나?
         deliveryEventProducer.sendDeliveryEvent(..);
 
     }
@@ -79,21 +79,21 @@ public class DeliveryPersonsService {
         Claims claims = jwtUtil.parseToken(jwt);
 
         if (!jwtUtil.hasRequiredRole(claims, List.of("MASTER"))) {
-            throw new CustomException("수정 권한이 없습니다.", HttpStatus.FORBIDDEN);
+            throw new CustomException(ErrorCode.FORBIDDEN_ACTION);
         }
 
         DeliveryPersons deliveryPerson = deliveryPersonsJpaRepository.findById(id)
-                .orElseThrow(() -> new CustomException("배송 담당자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_PERSON_NOT_FOUND));
 
         DeliveryType deliveryType;
         try {
             deliveryType = DeliveryType.valueOf(request.getType());
         } catch (IllegalArgumentException e) {
-            throw new CustomException("잘못된 배송 타입입니다: " + request.getType(), HttpStatus.BAD_REQUEST);
+            throw new CustomException(ErrorCode.INVALID_DELIVERY_TYPE);
         }
 
         if (deliveryType != DeliveryType.HUB_DELIVERY && request.getHubId() == null) {
-            throw new CustomException("허브 ID는 필수입니다.", HttpStatus.BAD_REQUEST);
+            throw new CustomException(ErrorCode.HUB_ID_REQUIRED);
         }
 
         deliveryPerson.update(request.getHubId(), deliveryType, UUID.fromString(claims.getSubject()));
@@ -103,9 +103,8 @@ public class DeliveryPersonsService {
 
     @Transactional(readOnly = true)
     public DeliveryPersonResponse getDeliveryPerson(UUID id) {
-
         DeliveryPersons deliveryPerson = deliveryPersonsJpaRepository.findById(id)
-                .orElseThrow(() -> new CustomException("배송 담당자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_PERSON_NOT_FOUND));
 
         return DeliveryPersonResponse.fromEntity(deliveryPerson);
     }
@@ -113,21 +112,20 @@ public class DeliveryPersonsService {
     @Transactional(readOnly = true)
     public Page<DeliveryPersonResponse> getAllDeliveryPersons(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-
         return deliveryPersonsJpaRepository.findAll(pageable)
                 .map(DeliveryPersonResponse::fromEntity);
     }
 
     @Transactional
     public DeleteDeliveryPersonResponse deleteDeliveryPerson(UUID id, String jwt) {
-
         Claims claims = jwtUtil.parseToken(jwt);
+
         if (!jwtUtil.hasRequiredRole(claims, List.of("COMPANY_ADMIN", "MASTER", "HUB_ADMIN", "DELIVERY_PERSON"))) {
-            throw new CustomException("삭제 권한이 없습니다.", HttpStatus.FORBIDDEN);
+            throw new CustomException(ErrorCode.FORBIDDEN_ACTION);
         }
 
         DeliveryPersons deliveryPerson = deliveryPersonsJpaRepository.findById(id)
-                .orElseThrow(() -> new CustomException("배송 담당자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_PERSON_NOT_FOUND));
 
         deliveryPerson.delete(UUID.fromString(claims.getSubject()));
 
