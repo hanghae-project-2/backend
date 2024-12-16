@@ -29,7 +29,7 @@ abstract class BaseEntity {
     var createdAt: LocalDateTime? = LocalDateTime.now()
         protected set
 
-    final var createdBy: UUID? = null
+    var createdBy: UUID? = null
         protected set
 
     @LastModifiedDate
@@ -46,4 +46,19 @@ abstract class BaseEntity {
 
     var deletedBy: UUID? = null
         protected set
+
+    fun createdBy(createdBy: UUID) {
+        this.createdBy = createdBy
+    }
+
+    fun updatedBy(updatedBy: UUID) {
+        this.updatedBy = updatedBy
+    }
+
+    fun deletedBy(deletedBy: UUID) {
+        this.isDelete = true
+        this.isPublic = false
+        this.deletedBy = deletedBy
+        this.deletedAt = LocalDateTime.now()
+    }
 }

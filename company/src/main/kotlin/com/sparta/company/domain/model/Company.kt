@@ -7,7 +7,6 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -49,7 +48,7 @@ class Company(
         hubId: UUID,
         createdBy: String,
     ) : this(name, type, address, hubId) {
-        this.createdBy = UUID.fromString(createdBy)
+        super.createdBy(UUID.fromString(createdBy))
     }
 
     fun checkManager(manager: String): Boolean {
@@ -61,15 +60,11 @@ class Company(
         this.type = CompanyType.valueOf(type)
         this.address = address
         this.manager = UUID.fromString(manager)
-        this.updatedBy = UUID.fromString(updatedBy)
-        this.updatedAt = LocalDateTime.now()
+        super.updatedBy(UUID.fromString(updatedBy))
     }
 
     fun markAsDelete(deletedBy: String) {
-        this.isDelete = true
-        this.isPublic = false
-        this.deletedAt = LocalDateTime.now()
-        this.deletedBy = UUID.fromString(deletedBy)
+        super.deletedBy(UUID.fromString(deletedBy))
     }
 
 }

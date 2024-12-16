@@ -2,6 +2,7 @@ package com.sparta.deliveryroute.presentation.api.controller;
 
 import com.sparta.deliveryroute.application.service.DeliveryRouteService;
 import com.sparta.deliveryroute.presentation.api.response.DeliveryRouteResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +19,11 @@ public class InternalDeliveryRouteController {
 	private final DeliveryRouteService deliveryRouteService;
 
 	@DeleteMapping("/delivery-route/deliveries/{deliveryId}")
-	public void deleteByDeliveryId(@PathVariable UUID deliveryId) {
-		deliveryRouteService.deleteByDeliveryId(deliveryId);
+	public void deleteByDeliveryId(
+			@PathVariable UUID deliveryId,
+			HttpServletRequest request
+	) {
+		deliveryRouteService.deleteByDeliveryId(request, deliveryId);
 	}
 
 	@GetMapping("/delivery-route/deliveries/{deliveryId}")

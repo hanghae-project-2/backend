@@ -23,7 +23,6 @@ import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
@@ -77,7 +76,8 @@ class HubService(
     }
 
     @Transactional
-    @Scheduled(cron = "0 0 0 * * *")
+//    TODO: 마스터 사용자 Id를 가지고 있어야 자동실행 가능
+//    @Scheduled(cron = "0 0 0 * * *")
     fun navigateHubRoutes(servletRequest: HttpServletRequest) {
 
         val hubRoutes = hubRouteRepository.findAll()
