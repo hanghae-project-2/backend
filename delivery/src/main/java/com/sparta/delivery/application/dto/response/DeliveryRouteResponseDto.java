@@ -5,7 +5,6 @@ import java.util.UUID;
 
 public record DeliveryRouteResponseDto(
         UUID deliveryRouteId,
-        String deliveryManagetName,
         Integer sequence,
         UUID startHubId,
         String startHubName,

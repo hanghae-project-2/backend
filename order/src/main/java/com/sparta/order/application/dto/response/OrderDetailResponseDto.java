@@ -33,7 +33,7 @@ public record OrderDetailResponseDto(
                 requestCompany.companyName(),
                 recipientCompany.companyId(),
                 recipientCompany.companyName(),
-                product.productName(),
+                product.name(),
                 order.getQuantity(),
                 order.getPrice(),
                 order.getTotalPrice(),

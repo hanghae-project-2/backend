@@ -25,7 +25,7 @@ public abstract class OrderControllerDocs {
 
     @Operation(summary = "주문 삭제", description = "주문 삭제 API")
     @DeleteMapping("/orders/{orderId}")
-    public abstract Response<OrderResponseDto> deleteOrder(@PathVariable UUID orderId);
+    public abstract Response<UUID> deleteOrder(@PathVariable UUID orderId);
 
     @Operation(summary = "주문 조회(단건)", description = "주문 조회 API")
     @GetMapping("/orders/{orderId}")

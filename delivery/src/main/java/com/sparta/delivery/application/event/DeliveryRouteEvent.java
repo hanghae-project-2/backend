@@ -4,7 +4,7 @@ import lombok.Builder;
 
 import java.util.UUID;
 
-@Builder
+
 public record DeliveryRouteEvent(
         UUID deliveryId,
         UUID startHubId,

@@ -12,8 +12,6 @@ import java.util.UUID;
 public interface DeliveryService {
     DeliveryDetailResponseDto getDeliveryById(UUID deliveryId);
 
-    UUID createDelivery();
-
     UUID updateDelivery(UUID deliveryId, DeliveryStatus status);
 
     UUID deleteDelivery(UUID deliveryId);
@@ -22,5 +20,4 @@ public interface DeliveryService {
 
     UUID getDeliveryByOrderId(UUID orderId);
 
-    UUID deleteDeliveryByOrderId(UUID orderId);
 }

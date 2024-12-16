@@ -1,9 +1,15 @@
 package com.sparta.delivery.application.event;
 
-import lombok.Builder;
+import java.util.UUID;
 
-@Builder
+
 public record SlackEvent(
-        //TODO : 추후 슬랙 추가
+        UUID recipientSlackId,
+        String deliveryAddress,
+        UUID deliveryPersonId,
+        String recipientName,
+        UUID startHubId,
+        UUID endHubId,
+        UUID orderId
 ) {
 }

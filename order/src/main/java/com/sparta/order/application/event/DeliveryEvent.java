@@ -6,6 +6,9 @@ import java.util.UUID;
 
 @Builder
 public record DeliveryEvent(
-        UUID orderId
+        UUID orderId,
+        String address,
+        UUID startHubId,
+        UUID endHubId
 ) {
 }
