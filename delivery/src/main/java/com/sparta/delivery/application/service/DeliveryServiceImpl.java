@@ -47,11 +47,6 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
-    public UUID createDelivery() {
-        return null;
-    }
-
-    @Override
     @Transactional
     public UUID updateDelivery(UUID deliveryId, DeliveryStatus status) {
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
@@ -111,20 +106,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         return delivery.getId();
     }
 
-    @Transactional
-    @Override
-    public UUID deleteDeliveryByOrderId(UUID orderId) {
-        Delivery delivery = deliveryRepository.findByOrderIdAndIsDeleteFalse(orderId).orElseThrow(
-                () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
-        );
 
-        //TODO : USERID 받으면 수정
-        delivery.deleteDelivery(orderId);
-
-        deliveryRouteClient.deleteByDeliveryId(delivery.getId());
-
-        return delivery.getId();
-    }
 
     private Page<Delivery> findDeliveries(DeliverySearchRequestDto requestDto) {
         if ("DESTINATION_HUB_NAME".equals(requestDto.searchType()) || "ORIGIN_HUB_NAME".equals(requestDto.searchType())) {

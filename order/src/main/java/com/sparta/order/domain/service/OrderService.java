@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface OrderService {
     OrderResponseDto createOrder(OrderCreateRequestDto requestDto);
 
-    OrderResponseDto deleteOrder(UUID orderId);
+    UUID deleteOrder(UUID orderId);
 
     OrderDetailResponseDto getOrderById(UUID orderId);
 

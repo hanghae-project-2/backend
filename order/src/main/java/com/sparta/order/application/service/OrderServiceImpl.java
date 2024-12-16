@@ -5,6 +5,7 @@ import com.sparta.order.application.dto.request.OrderCreateRequestDto;
 import com.sparta.order.application.dto.request.OrderSearchRequestDto;
 import com.sparta.order.application.dto.request.OrderUpdateRequestDto;
 import com.sparta.order.application.dto.response.*;
+import com.sparta.order.application.event.DeleteEvent;
 import com.sparta.order.infrastructure.client.CompanyClient;
 import com.sparta.order.infrastructure.client.DeliveryClient;
 import com.sparta.order.infrastructure.client.ProductClient;
@@ -74,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponseDto deleteOrder(UUID orderId) {
+    public UUID deleteOrder(UUID orderId) {
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
@@ -82,13 +83,9 @@ public class OrderServiceImpl implements OrderService {
         //TODO : userID 로 바꾸기
         order.deleteOrder(orderId);
 
-        UUID deliveryId = deliveryClient.deleteDeliveryByOrderId(orderId);
+        kafkaProducer.delete(new DeleteEvent(orderId));
 
-
-        return OrderResponseDto.builder()
-                .orderId(order.getId())
-                .deliveryId(deliveryId)
-                .build();
+        return orderId;
     }
 
     @Transactional(readOnly = true)

@@ -33,7 +33,7 @@ public class OrderController extends OrderControllerDocs {
 
     @DeleteMapping("/{orderId}")
     @Override
-    public Response<OrderResponseDto> deleteOrder(@PathVariable UUID orderId) {
+    public Response<UUID> deleteOrder(@PathVariable UUID orderId) {
         return new Response<>(HttpStatus.NO_CONTENT.value(),HttpStatus.NO_CONTENT.getReasonPhrase(), orderService.deleteOrder(orderId));
     }
 

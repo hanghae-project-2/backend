@@ -2,7 +2,10 @@ package com.sparta.delivery.application.service;
 
 import com.sparta.delivery.application.dto.response.UserResponseDto;
 import com.sparta.delivery.application.event.CreateDeliveryEvent;
+import com.sparta.delivery.application.event.DeleteEvent;
 import com.sparta.delivery.application.event.DeliveryEvent;
+import com.sparta.delivery.domain.exception.DeliveryException;
+import com.sparta.delivery.domain.exception.Error;
 import com.sparta.delivery.domain.model.Delivery;
 import com.sparta.delivery.domain.repository.DeliveryRepository;
 import com.sparta.delivery.infrastructure.client.UserClient;
@@ -39,6 +42,21 @@ public class OrderEventService {
         kafkaProducer.send(cratedEvent);
 
     }
+
+    @Transactional
+    public void deleteDelivery(DeleteEvent target) {
+        Delivery delivery = deliveryRepository.findByOrderIdAndIsDeleteFalse(target.id()).orElseThrow(
+                () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
+        );
+
+        //TODO : USERID 받으면 수정
+        delivery.deleteDelivery(UUID.randomUUID());
+
+        kafkaProducer.delete(target);
+    }
+
+
+
 
 
 }

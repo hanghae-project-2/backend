@@ -15,6 +15,4 @@ public interface DeliveryClient {
     @GetMapping("/deliveries/orders/{orderId}")
     UUID getDeliveryByOrderId(@PathVariable UUID orderId);
 
-    @DeleteMapping("/deliveries/orders/{orderId}")
-    UUID deleteDeliveryByOrderId(@PathVariable UUID orderId);
 }
