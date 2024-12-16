@@ -5,6 +5,7 @@ import com.sparta.product.application.dto.*;
 import com.sparta.product.domain.model.Product;
 import com.sparta.product.application.service.ProductServiceImpl;
 import com.sparta.product.domain.service.ProductService;
+import com.sparta.product.presentation.api.controller.docs.ProductControllerDocs;
 import com.sparta.product.presentation.api.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
-public class ProductController {
+public class ProductController extends ProductControllerDocs {
 
     private final ProductService productService;
 
