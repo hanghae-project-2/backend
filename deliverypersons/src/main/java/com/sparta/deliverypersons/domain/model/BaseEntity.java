@@ -47,15 +47,15 @@ public abstract class BaseEntity {
     @Column
     @Temporal(TemporalType.TIMESTAMP)
     @Comment("삭제일")
-    private LocalDateTime deletedAt;
+    protected LocalDateTime deletedAt;
 
     @Column
     @Comment("삭제자")
-    private UUID deletedBy;
+    protected UUID deletedBy;
 
     @NotNull
     @Column(nullable = false)
-    private Boolean isDelete = false;
+    protected Boolean isDelete = false;
 
     protected void delete(UUID deletedBy) {
         this.isDelete = true;

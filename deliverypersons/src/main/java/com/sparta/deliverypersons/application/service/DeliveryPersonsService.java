@@ -7,13 +7,18 @@ import com.sparta.deliverypersons.infrastructure.messaging.producer.DeliveryEven
 import com.sparta.deliverypersons.infrastructure.repository.DeliveryPersonsJpaRepository;
 import com.sparta.deliverypersons.infrastructure.security.JwtUtil;
 import com.sparta.deliverypersons.presentation.dto.request.UpdateDeliveryPersonRequest;
+import com.sparta.deliverypersons.presentation.dto.response.DeleteDeliveryPersonResponse;
 import com.sparta.deliverypersons.presentation.dto.response.DeliveryPersonResponse;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -106,5 +111,31 @@ public class DeliveryPersonsService {
                 .orElseThrow(() -> new CustomException("배송 담당자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
         return DeliveryPersonResponse.fromEntity(deliveryPerson);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<DeliveryPersonResponse> getAllDeliveryPersons(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 배송 담당자 목록 조회 및 DTO 변환
+        return deliveryPersonsJpaRepository.findAll(pageable)
+                .map(DeliveryPersonResponse::fromEntity);
+    }
+
+
+    @Transactional
+    public DeleteDeliveryPersonResponse deleteDeliveryPerson(UUID id, String jwt) {
+
+        Claims claims = jwtUtil.parseToken(jwt);
+        if (!jwtUtil.hasRequiredRole(claims, List.of("COMPANY_ADMIN", "MASTER", "HUB_ADMIN", "DELIVERY_PERSON"))) {
+            throw new CustomException("삭제 권한이 없습니다.", HttpStatus.FORBIDDEN);
+        }
+
+        DeliveryPersons deliveryPerson = deliveryPersonsJpaRepository.findById(id)
+                .orElseThrow(() -> new CustomException("배송 담당자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        deliveryPerson.delete(UUID.fromString(claims.getSubject()));
+
+        return DeleteDeliveryPersonResponse.of(deliveryPerson.getId(), deliveryPerson.getUserId());
     }
 }

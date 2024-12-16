@@ -2,6 +2,7 @@ package com.sparta.deliverypersons.presentation.controller;
 
 import com.sparta.deliverypersons.application.service.DeliveryPersonsService;
 import com.sparta.deliverypersons.presentation.dto.request.UpdateDeliveryPersonRequest;
+import com.sparta.deliverypersons.presentation.dto.response.DeleteDeliveryPersonResponse;
 import com.sparta.deliverypersons.presentation.dto.response.DeliveryPersonResponse;
 import com.sparta.deliverypersons.presentation.response.Response;
 import org.springframework.data.domain.Page;
@@ -68,6 +69,21 @@ public class DeliveryPersonsController {
         );
     }
 
+    @DeleteMapping("/{id}")
+    public Response<DeleteDeliveryPersonResponse> deleteDeliveryPerson(
+            @PathVariable UUID id,
+            @RequestHeader("Authorization") String authorizationHeader) {
 
-    // 배송 담당자 삭제 api
+        // JWT 토큰 추출
+        String jwt = authorizationHeader.replace("Bearer ", "");
+
+        // 서비스 호출
+        DeleteDeliveryPersonResponse response = deliveryPersonsService.deleteDeliveryPerson(id, jwt);
+
+        return new Response<>(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.getReasonPhrase(),
+                response
+        );
+    }
 }

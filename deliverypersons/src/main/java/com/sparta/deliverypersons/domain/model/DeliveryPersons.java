@@ -50,4 +50,10 @@ public class DeliveryPersons extends BaseEntity {
         this.updatedBy = updatedBy;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void delete(UUID deletedBy) {
+        this.isDelete = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+    }
 }
