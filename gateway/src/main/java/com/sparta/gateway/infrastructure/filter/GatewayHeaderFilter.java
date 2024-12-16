@@ -40,8 +40,8 @@ public class GatewayHeaderFilter implements GlobalFilter, Ordered {
 			return chain.filter(
 					exchange.mutate().request(
 							exchange.getRequest().mutate()
-									.header("Authenticated-User-Id", tokenParser.getUserId(jwt))
-									.header("Authenticated-User-Role", tokenParser.getUserRole(jwt))
+									.header("X-Authenticated-User-Id", tokenParser.getUserId(jwt))
+									.header("X-Authenticated-User-Role", tokenParser.getUserRole(jwt))
 									.build()
 					).build()
 			);

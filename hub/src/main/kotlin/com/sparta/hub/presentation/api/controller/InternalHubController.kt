@@ -25,7 +25,12 @@ class InternalHubController(
     ): RouteResult =
         hubService.getOptimalHubRoutes(startHubId, endHubId)
 
-    //TODO: 왜 List<HubResponse> 를 리턴하는지 확인. 아마 name 이 일치하는 hub 를 찾는것같은데..?
+    @GetMapping("/hubs/company/{hubId}")
+    fun existHub(
+        @PathVariable hubId: UUID
+    ): Boolean =
+        hubService.existHub(hubId)
+
     @GetMapping("/hubs/search-by-name")
     fun findHubByName(
         @RequestParam hubName: String

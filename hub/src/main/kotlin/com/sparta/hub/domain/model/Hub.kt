@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import org.hibernate.annotations.DynamicUpdate
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -39,17 +40,27 @@ class Hub(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null
 
-    fun updatePosition(latitude: Double?, longitude: Double?) {
+    constructor(
+        name: String,
+        address: String,
+        latitude: Double,
+        longitude: Double,
+        createdBy: String
+    ) : this(name, address, latitude, longitude) {
+        this.createdBy = UUID.fromString(createdBy)
+    }
+
+    fun updateInfo(latitude: Double?, longitude: Double?, name: String, updatedBy: String) {
         this.latitude = latitude
         this.longitude = longitude
-    }
-
-    fun updateName(name: String) {
         this.name = name
+        this.updatedBy = UUID.fromString(updatedBy)
     }
 
-    fun markAsDelete() {
+    fun markAsDelete(deletedBy: String) {
         this.isDelete = true
         this.isPublic = false
+        this.deletedBy = UUID.fromString(deletedBy)
+        this.deletedAt = LocalDateTime.now()
     }
 }
