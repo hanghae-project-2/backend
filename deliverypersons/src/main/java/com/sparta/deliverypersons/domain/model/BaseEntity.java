@@ -35,13 +35,13 @@ public abstract class BaseEntity {
     @Column
     @Temporal(TemporalType.TIMESTAMP)
     @Comment("수정일")
-    private LocalDateTime updatedAt;
+    protected LocalDateTime updatedAt;
 
 
     @LastModifiedBy
     @Column
     @Comment("수정자")
-    private UUID updatedBy;
+    protected UUID updatedBy;
 
 
     @Column

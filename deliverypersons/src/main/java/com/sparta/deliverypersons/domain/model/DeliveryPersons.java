@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 
@@ -37,5 +38,16 @@ public class DeliveryPersons extends BaseEntity {
         deliveryPerson.type = type;
         deliveryPerson.deliverySequence = sequence;
         return deliveryPerson;
+    }
+
+    public void update(UUID hubId, DeliveryType type, UUID updatedBy) {
+        if (type == DeliveryType.HUB_DELIVERY) {
+            this.hubId = null; // 허브 배송 담당자의 경우 허브 ID를 null로 설정
+        } else {
+            this.hubId = hubId;
+        }
+        this.type = type;
+        this.updatedBy = updatedBy;
+        this.updatedAt = LocalDateTime.now();
     }
 }
