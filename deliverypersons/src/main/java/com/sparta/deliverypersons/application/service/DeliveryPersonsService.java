@@ -7,6 +7,7 @@ import com.sparta.deliverypersons.infrastructure.messaging.producer.DeliveryEven
 import com.sparta.deliverypersons.infrastructure.repository.DeliveryPersonsJpaRepository;
 import com.sparta.deliverypersons.infrastructure.security.JwtUtil;
 import com.sparta.deliverypersons.presentation.dto.request.UpdateDeliveryPersonRequest;
+import com.sparta.deliverypersons.presentation.dto.response.DeliveryPersonResponse;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -77,11 +78,11 @@ public class DeliveryPersonsService {
             throw new CustomException("권한이 없습니다.", HttpStatus.FORBIDDEN);
         }
 
-        // 배송 담당자 조회
+
         DeliveryPersons deliveryPerson = deliveryPersonsJpaRepository.findById(id)
                 .orElseThrow(() -> new CustomException("배송 담당자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
-        // 배송 타입 검증
+
         DeliveryType deliveryType;
         try {
             deliveryType = DeliveryType.valueOf(request.getType());
@@ -89,12 +90,21 @@ public class DeliveryPersonsService {
             throw new CustomException("잘못된 배송 타입입니다: " + request.getType(), HttpStatus.BAD_REQUEST);
         }
 
-        // 허브 ID 유효성 확인 (허브 배송 담당자가 아닌 경우)
+
         if (deliveryType != DeliveryType.HUB_DELIVERY && request.getHubId() == null) {
             throw new CustomException("허브 ID는 필수입니다.", HttpStatus.BAD_REQUEST);
         }
 
-        // 배송 담당자 정보 업데이트
+
         deliveryPerson.update(request.getHubId(), deliveryType, UUID.fromString(claims.getSubject()));
+    }
+
+    @Transactional(readOnly = true)
+    public DeliveryPersonResponse getDeliveryPerson(UUID id) {
+
+        DeliveryPersons deliveryPerson = deliveryPersonsJpaRepository.findById(id)
+                .orElseThrow(() -> new CustomException("배송 담당자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        return DeliveryPersonResponse.fromEntity(deliveryPerson);
     }
 }
