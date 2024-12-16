@@ -1,6 +1,7 @@
 package com.sparta.company.presentation.api.controller
 
 import com.sparta.company.application.service.CompanyService
+import com.sparta.company.libs.RoleValidation
 import com.sparta.company.presentation.api.controller.docs.CompanyControllerDocs
 import com.sparta.company.presentation.api.request.BaseCompanyRequest
 import com.sparta.company.presentation.api.request.CompanySearchRequest
@@ -10,6 +11,7 @@ import com.sparta.company.presentation.api.response.CompanyResponse
 import com.sparta.company.presentation.api.response.CompanySummaryResponse
 import com.sparta.company.presentation.api.response.Response
 import com.sparta.company.presentation.api.response.toResponse
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -29,24 +31,28 @@ class CompanyController(
 ) : CompanyControllerDocs() {
 
     @PostMapping
+    @RoleValidation("MASTER", "HUB_ADMIN")
     override fun registerCompany(
-        @RequestBody request: RegisterCompanyRequest
+        @RequestBody request: RegisterCompanyRequest,
+        servletRequest: HttpServletRequest
     ): Response<UUID> =
         Response(
             HttpStatus.CREATED.value(),
             HttpStatus.CREATED.reasonPhrase,
-            companyService.registerCompany(request.toDto())
+            companyService.registerCompany(servletRequest, request.toDto())
         )
 
     @PatchMapping("/{companyId}")
+    @RoleValidation("MASTER", "HUB_ADMIN", "COMPANY_ADMIN")
     override fun updateCompany(
         @PathVariable companyId: UUID,
-        @RequestBody request: BaseCompanyRequest
+        @RequestBody request: BaseCompanyRequest,
+        servletRequest: HttpServletRequest
     ): Response<UUID> =
         Response(
             HttpStatus.OK.value(),
             HttpStatus.OK.reasonPhrase,
-            companyService.updateCompany(companyId, request.toDto())
+            companyService.updateCompany(servletRequest, companyId, request.toDto())
         )
 
     @GetMapping("/{companyId}")

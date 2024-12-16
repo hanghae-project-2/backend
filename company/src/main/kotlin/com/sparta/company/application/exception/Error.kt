@@ -10,6 +10,8 @@ enum class Error(val status: HttpStatus, val message: String) {
     INCORRECT_COMPANY_TYPE(HttpStatus.BAD_REQUEST, "잘못된 업체 타입입니다."),
     INCORRECT_HUB_ID(HttpStatus.BAD_REQUEST, "잘못된 허브 ID 입니다."),
 
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+
     CIRCUIT_BREAKER_OPEN(HttpStatus.BAD_REQUEST, "서비스가 일시적으로 사용 불가능합니다."),
     SERVER_TIMEOUT(HttpStatus.REQUEST_TIMEOUT, "응답 시간을 초과하였습니다."),
 

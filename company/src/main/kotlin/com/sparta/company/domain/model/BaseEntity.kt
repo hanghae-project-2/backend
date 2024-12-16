@@ -29,7 +29,7 @@ abstract class BaseEntity {
     var createdAt: LocalDateTime? = LocalDateTime.now()
         protected set
 
-    var createdBy: UUID? = null
+    final var createdBy: UUID? = null
         protected set
 
     @LastModifiedDate

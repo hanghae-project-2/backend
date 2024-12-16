@@ -39,16 +39,28 @@ class Company(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID()
 
-    fun updateInfo(name: String, type: String, address: String) {
+    constructor(
+        name: String,
+        type: CompanyType,
+        address: String,
+        hubId: UUID,
+        createdBy: String,
+    ) : this(name, type, address, hubId) {
+        this.createdBy = UUID.fromString(createdBy)
+    }
+
+    fun updateInfo(name: String, type: String, address: String, updatedBy: String) {
         this.name = name
         this.type = CompanyType.valueOf(type)
         this.address = address
+        this.updatedBy = UUID.fromString(updatedBy)
     }
 
-    fun markAsDelete() {
+    fun markAsDelete(deletedBy: String) {
         this.isDelete = true
         this.isPublic = false
         this.deletedAt = LocalDateTime.now()
+        this.deletedBy = UUID.fromString(deletedBy)
     }
 
 }

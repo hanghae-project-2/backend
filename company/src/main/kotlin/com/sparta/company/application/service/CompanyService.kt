@@ -8,10 +8,12 @@ import com.sparta.company.application.dto.request.toEntity
 import com.sparta.company.application.dto.response.CompanyResponseDto
 import com.sparta.company.application.dto.response.CompanySummaryResponseDto
 import com.sparta.company.application.dto.response.toResponseDto
+import com.sparta.company.application.exception.AccessDeniedException
 import com.sparta.company.application.exception.IncorrectHubIdException
 import com.sparta.company.application.exception.NotFoundCompanyException
 import com.sparta.company.application.exception.NotFoundHubException
 import com.sparta.company.domain.repository.CompanyRepository
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -25,24 +27,54 @@ class CompanyService(
 ) {
 
     @Transactional
-    fun registerCompany(request: RegisterCompanyRequestDto): UUID {
+    fun registerCompany(servletRequest: HttpServletRequest, request: RegisterCompanyRequestDto): UUID {
+
+        val createdBy = servletRequest.getHeader("X-Authenticated-User-Id")
+        val role = servletRequest.getHeader("X-Authenticated-User-Role")
 
         val hubId = extractUUID(request.hubId)
 
-        hubService.existHub(hubId).takeIf { it } ?: throw NotFoundHubException()
+        if (role.equals("MASTER")) {
+            hubService.existHub(hubId).takeIf { it } ?: throw NotFoundHubException()
+        } else {
+            hubService.existHub(hubId, createdBy).takeIf { it } ?: throw NotFoundHubException()
+        }
 
-        return companyRepository.save(request.toEntity()).id
+        return companyRepository.save(request.toEntity(createdBy)).id
     }
 
     @Transactional
-    fun updateCompany(companyId: UUID, request: BaseCompanyRequestDto): UUID {
+    fun updateCompany(servletRequest: HttpServletRequest, companyId: UUID, request: BaseCompanyRequestDto): UUID {
+
+        val userId = servletRequest.getHeader("X-Authenticated-User-Id")
+        val role = servletRequest.getHeader("X-Authenticated-User-Role")
 
         val company = companyRepository.findByIdOrNull(companyId) ?: throw NotFoundCompanyException()
 
-        company.updateInfo(request.name, request.type, request.address)
+        when (role) {
+            "MASTER" -> {
+                hubService.existHub(company.hubId).takeIf { it } ?: throw NotFoundHubException()
+            }
+
+            "HUB_ADMIN" -> {
+                hubService.existHub(company.hubId, userId).takeIf { it } ?: throw NotFoundHubException()
+            }
+
+            "COMPANY_ADMIN" -> {
+                company.createdBy?.equals(UUID.fromString(userId)) ?: throw AccessDeniedException()
+                request.isDelete.takeIf { it } ?: throw AccessDeniedException()
+            }
+        }
+
+        company.updateInfo(
+            request.name,
+            request.type,
+            request.address,
+            userId,
+        )
 
         if (request.isDelete) {
-            company.markAsDelete()
+            company.markAsDelete(userId)
         }
 
         return companyRepository.save(company).id

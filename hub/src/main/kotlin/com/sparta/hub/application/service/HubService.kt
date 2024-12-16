@@ -201,6 +201,13 @@ class HubService(
     }
 
     @Transactional(readOnly = true)
+    fun existHub(hubId: UUID, userId: UUID): Boolean {
+        val hub = hubRepository.findByIdOrNull(hubId) ?: throw NotFoundHubException()
+
+        return hub.checkCreatedBy(userId)
+    }
+
+    @Transactional(readOnly = true)
     fun findHubByName(hubName: String): HubResponseDto {
         return hubRepository.findByNameIs(hubName).orElseThrow { NotFoundHubException() }.toResponseDto()
     }

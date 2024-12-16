@@ -32,7 +32,7 @@ class HubController(
 ) : HubControllerDocs() {
 
     @PostMapping
-    @RoleValidation("HUB_ADMIN")
+    @RoleValidation("MASTER")
     override fun registerHub(
         @RequestParam address: String,
         @RequestParam hubName: String,
@@ -45,7 +45,7 @@ class HubController(
         )
 
     @PatchMapping("/navigate")
-    @RoleValidation("HUB_ADMIN")
+    @RoleValidation("MASTER")
     override fun navigateHubRoutes(
         servletRequest: HttpServletRequest
     ): Response<Unit> =
@@ -91,7 +91,7 @@ class HubController(
         )
 
     @PatchMapping("/{hubId}")
-    @RoleValidation("HUB_ADMIN")
+    @RoleValidation("MASTER")
     override fun modifyHub(
         @PathVariable hubId: UUID,
         @RequestBody request: HubRequest,

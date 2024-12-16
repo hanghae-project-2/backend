@@ -11,9 +11,10 @@ data class RegisterCompanyRequestDto(
     val hubId: String,
 )
 
-fun RegisterCompanyRequestDto.toEntity(): Company = Company(
+fun RegisterCompanyRequestDto.toEntity(createdBy: String): Company = Company(
     name = name,
     type = CompanyType.fromKey(type),
     address = address,
-    hubId = UUID.fromString(hubId)
+    hubId = UUID.fromString(hubId),
+    createdBy = createdBy,
 )

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.GetMapping
@@ -61,7 +62,8 @@ abstract class CompanyControllerDocs {
     )
     @PostMapping("/companies")
     abstract fun registerCompany(
-        @RequestBody request: RegisterCompanyRequest
+        @RequestBody request: RegisterCompanyRequest,
+        servletRequest: HttpServletRequest
     ): Response<UUID>
 
     @Operation(summary = "업체 정보 수정", description = "업체 정보를 수정하는 API 입니다.")
@@ -93,7 +95,8 @@ abstract class CompanyControllerDocs {
     @PatchMapping("/companies/{companyId}")
     abstract fun updateCompany(
         @PathVariable companyId: UUID,
-        @RequestBody request: BaseCompanyRequest
+        @RequestBody request: BaseCompanyRequest,
+        servletRequest: HttpServletRequest
     ): Response<UUID>
 
     @Operation(summary = "단일 업체 조회", description = "단일 업체를 조회하는 API 입니다.")

@@ -25,9 +25,16 @@ class InternalHubController(
     ): RouteResult =
         hubService.getOptimalHubRoutes(startHubId, endHubId)
 
+    @GetMapping("/hubs/company")
+    fun existHub(
+        @RequestParam hubId: UUID,
+        @RequestParam userId: UUID
+    ): Boolean =
+        hubService.existHub(hubId, userId)
+
     @GetMapping("/hubs/company/{hubId}")
     fun existHub(
-        @PathVariable hubId: UUID
+        @PathVariable hubId: UUID,
     ): Boolean =
         hubService.existHub(hubId)
 

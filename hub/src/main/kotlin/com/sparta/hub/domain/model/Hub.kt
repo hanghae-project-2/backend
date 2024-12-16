@@ -50,6 +50,10 @@ class Hub(
         this.createdBy = UUID.fromString(createdBy)
     }
 
+    fun checkCreatedBy(createdBy: UUID): Boolean {
+        return this.createdBy == createdBy
+    }
+
     fun updateInfo(latitude: Double?, longitude: Double?, name: String, updatedBy: String) {
         this.latitude = latitude
         this.longitude = longitude
