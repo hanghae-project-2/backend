@@ -15,9 +15,11 @@ interface HubRepository {
 
     fun findAll(): List<Hub>
 
-    fun findById(id: UUID): Optional<Hub>
+    fun findByIdOrNull(id: UUID): Hub?
 
     fun existsById(id: UUID): Boolean
+
+    fun findByIds(ids: List<UUID>): List<Hub>
 
     fun findPageBy(pageRequest: Pageable, searchRequestDto: HubSearchRequestDto): Page<HubSummaryResponseDto>
 

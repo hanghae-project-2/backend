@@ -10,6 +10,6 @@ data class RouteInfo(
 
 fun HubRoute.toRouteInfo() = RouteInfo(
     destination = endHub?.name,
-    distance = estimatedMeter?.toInt(),
-    time = estimatedSecond?.toInt(),
+    distance = estimatedMeter,
+    time = estimatedSecond,
 )

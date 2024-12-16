@@ -11,18 +11,29 @@ import java.util.*
 @Entity
 @DynamicUpdate
 class Hub(
-    @Column(nullable = false)
-    var name: String,
+    name: String,
 
-    @Column(nullable = false)
-    var address: String,
+    address: String,
 
-    @Column(nullable = false)
-    var latitude: Double? = null,
+    latitude: Double,
 
-    @Column(nullable = false)
-    var longitude: Double? = null,
+    longitude: Double,
 ) : BaseEntity() {
+
+    @Column(nullable = false)
+    var name: String = name
+        protected set
+
+    @Column(nullable = false)
+    var address: String = address
+
+    @Column(nullable = false)
+    var latitude: Double? = latitude
+        protected set
+
+    @Column(nullable = false)
+    var longitude: Double? = longitude
+        protected set
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

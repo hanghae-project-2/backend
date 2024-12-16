@@ -6,7 +6,9 @@ import com.sparta.company.application.dto.request.CompanySearchRequestDto
 import com.sparta.company.application.dto.request.RegisterCompanyRequestDto
 import com.sparta.company.application.dto.request.toEntity
 import com.sparta.company.application.dto.response.BaseCompanyResponseDto
+import com.sparta.company.application.dto.response.CompanyResponseDto
 import com.sparta.company.application.dto.response.CompanySummaryResponseDto
+import com.sparta.company.application.dto.response.toBaseResponseDto
 import com.sparta.company.application.dto.response.toResponseDto
 import com.sparta.company.application.exception.IncorrectHubIdException
 import com.sparta.company.application.exception.NotFoundCompanyException
@@ -50,7 +52,7 @@ class CompanyService(
 
     //TODO: 업체 조회 시 추가데이터 필요할지?
     @Transactional(readOnly = true)
-    fun getCompany(companyId: UUID): BaseCompanyResponseDto {
+    fun getCompany(companyId: UUID): CompanyResponseDto {
         return companyRepository.findByIdOrNull(companyId)?.toResponseDto() ?: throw NotFoundCompanyException()
     }
 
@@ -68,5 +70,26 @@ class CompanyService(
         requestDto: CompanySearchRequestDto
     ): Page<CompanySummaryResponseDto> {
         return companyRepository.findPageBy(pageable, requestDto)
+    }
+
+    @Transactional(readOnly = true)
+    fun findCompanyByName(
+        name: String
+    ): BaseCompanyResponseDto {
+        return companyRepository.findByNameIs(name).orElseThrow { NotFoundCompanyException() }.toBaseResponseDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun findCompanyById(
+        id: UUID
+    ): BaseCompanyResponseDto {
+        return companyRepository.findByIdOrNull(id)?.toBaseResponseDto() ?: throw NotFoundCompanyException()
+    }
+
+    @Transactional(readOnly = true)
+    fun findCompaniesByIds(
+        ids: List<UUID>
+    ): List<BaseCompanyResponseDto> {
+        return companyRepository.findByIds(ids).map { it.toBaseResponseDto() }
     }
 }

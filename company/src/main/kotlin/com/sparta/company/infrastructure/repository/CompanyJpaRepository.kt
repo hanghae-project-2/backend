@@ -17,7 +17,9 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.stereotype.Repository
 import java.util.*
 
-interface CompanyJpaRepository : JpaRepository<Company, UUID>
+interface CompanyJpaRepository : JpaRepository<Company, UUID> {
+    fun findByNameIs(name: String): Optional<Company>
+}
 
 @Repository
 class CompanyRepositoryImpl(
@@ -30,6 +32,14 @@ class CompanyRepositoryImpl(
 
     override fun findByIdOrNull(id: UUID): Company? {
         return companyJpaRepository.findById(id).orElse(null)
+    }
+
+    override fun findByNameIs(name: String): Optional<Company> {
+        return companyJpaRepository.findByNameIs(name)
+    }
+
+    override fun findByIds(ids: List<UUID>): List<Company> {
+        return companyJpaRepository.findAllById(ids)
     }
 
     override fun findPageBy(

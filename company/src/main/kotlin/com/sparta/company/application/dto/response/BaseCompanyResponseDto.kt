@@ -1,18 +1,14 @@
 package com.sparta.company.application.dto.response
 
 import com.sparta.company.domain.model.Company
-import com.sparta.company.domain.model.CompanyType
+import java.util.*
 
 data class BaseCompanyResponseDto(
-    val name: String,
-    val address: String,
-    val type: String,
-    val hubId: String,
+    val companyId: UUID,
+    val companyName: String,
 )
 
-fun Company.toResponseDto() = BaseCompanyResponseDto(
-    name = name,
-    address = address,
-    type = CompanyType.toKey(type),
-    hubId = hubId.toString(),
+fun Company.toBaseResponseDto() = BaseCompanyResponseDto(
+    companyId = this.id,
+    companyName = this.name,
 )
