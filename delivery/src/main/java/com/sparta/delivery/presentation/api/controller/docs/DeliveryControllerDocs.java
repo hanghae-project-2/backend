@@ -41,8 +41,4 @@ public abstract class DeliveryControllerDocs {
     public abstract Response<UUID> complateDelivery(@PathVariable UUID deliveryId, DeliveryComplateRequestDto requestDto, HttpServletRequest servletRequest);
 
 
-    //임시 api 이름 api 규칙 질문할것
-    @GetMapping("/deliveries/orders/{orderId}")
-    public abstract UUID getDeliveryByOrderId(@PathVariable UUID orderId);
-
 }

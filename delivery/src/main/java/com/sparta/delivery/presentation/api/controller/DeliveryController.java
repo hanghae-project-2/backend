@@ -66,11 +66,7 @@ public class DeliveryController extends DeliveryControllerDocs {
 
 
 
-    @GetMapping("/orders/{orderId}")
-    @Override
-    public UUID getDeliveryByOrderId(@PathVariable UUID orderId) {
-        return deliveryService.getDeliveryByOrderId(orderId);
-    }
+
 
 
 

@@ -17,6 +17,7 @@ public interface ProductClient {
     @GetMapping("/products/ids")
     List<ProductInfoResponseDto> findProductsByIds(@RequestBody List<UUID> ids);
 
-    @GetMapping("/products/{productId}")
-    Response<ProductInfoResponseDto> findProductById(@PathVariable("productId") UUID productId);
+    //TODO: 여기도 api 협의 안됨 성호님과 상의
+    @GetMapping("/products/{productId}/feign")
+    ProductInfoResponseDto findProductById(@PathVariable("productId") UUID productId);
 }
