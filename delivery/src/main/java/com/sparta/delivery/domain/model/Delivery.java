@@ -1,5 +1,6 @@
 package com.sparta.delivery.domain.model;
 
+import com.sparta.delivery.application.dto.request.DeliveryComplateRequestDto;
 import com.sparta.delivery.application.dto.response.UserResponseDto;
 import com.sparta.delivery.application.event.DeliveryEvent;
 import jakarta.persistence.*;
@@ -70,5 +71,11 @@ public class Delivery extends BaseEntity {
                 .startHubId(event.startHubId())
                 .endHubId(event.endHubId())
                 .build();
+    }
+
+    public void complateDelivery(DeliveryComplateRequestDto requestDto) {
+        this.currentStatus = DeliveryStatus.DELIVERED;
+        this.actualTime = requestDto.actualTime();
+        this.actualDistance = requestDto.actualDistance();
     }
 }

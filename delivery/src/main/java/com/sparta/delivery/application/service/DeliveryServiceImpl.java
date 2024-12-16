@@ -1,5 +1,6 @@
 package com.sparta.delivery.application.service;
 
+import com.sparta.delivery.application.dto.request.DeliveryComplateRequestDto;
 import com.sparta.delivery.application.dto.request.DeliverySearchRequestDto;
 import com.sparta.delivery.application.dto.response.*;
 import com.sparta.delivery.domain.exception.DeliveryException;
@@ -11,6 +12,7 @@ import com.sparta.delivery.domain.service.DeliveryService;
 import com.sparta.delivery.infrastructure.client.DeliveryRouteClient;
 import com.sparta.delivery.infrastructure.client.HubClient;
 import com.sparta.delivery.infrastructure.client.UserClient;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -32,7 +34,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional(readOnly = true)
-    public DeliveryDetailResponseDto getDeliveryById(UUID deliveryId) {
+    public DeliveryDetailResponseDto getDeliveryById(UUID deliveryId, HttpServletRequest servletRequest) {
 
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
@@ -48,7 +50,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional
-    public UUID updateDelivery(UUID deliveryId, DeliveryStatus status) {
+    public UUID updateDelivery(UUID deliveryId, DeliveryStatus status, HttpServletRequest servletRequest) {
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
@@ -60,13 +62,14 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional
-    public UUID deleteDelivery(UUID deliveryId) {
+    public UUID deleteDelivery(UUID deliveryId, HttpServletRequest servletRequest) {
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
 
         delivery.deleteDelivery(delivery.getCreatedBy());
 
+        //TODO: 카프카로 변경
         deliveryRouteClient.deleteByDeliveryId(deliveryId);
 
         return deliveryId;
@@ -74,7 +77,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponseDto<DeliveryListResponseDto> getDeliveries(DeliverySearchRequestDto requestDto) {
+    public PageResponseDto<DeliveryListResponseDto> getDeliveries(DeliverySearchRequestDto requestDto, HttpServletRequest servletRequest) {
         Page<Delivery> deliveries = findDeliveries(requestDto);
 
         List<UUID> originHubIds = deliveries.map(Delivery::getStartHubId).stream().distinct().toList();
@@ -106,6 +109,17 @@ public class DeliveryServiceImpl implements DeliveryService {
         return delivery.getId();
     }
 
+    @Transactional
+    @Override
+    public UUID complateDelivery(UUID deliveryId, DeliveryComplateRequestDto requestDto, HttpServletRequest servletRequest) {
+        Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
+                () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
+        );
+
+        delivery.complateDelivery(requestDto);
+
+        return deliveryId;
+    }
 
 
     private Page<Delivery> findDeliveries(DeliverySearchRequestDto requestDto) {

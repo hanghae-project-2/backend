@@ -10,6 +10,7 @@ import com.sparta.order.application.dto.response.PageResponseDto;
 import com.sparta.order.presentation.api.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -21,22 +22,22 @@ import java.util.UUID;
 public abstract class OrderControllerDocs {
     @Operation(summary = "주문 생성", description = "주문 생성 API")
     @PostMapping("/orders")
-    public abstract Response<OrderResponseDto> createOrder(@RequestBody OrderCreateRequestDto requestDto);
+    public abstract Response<OrderResponseDto> createOrder(@RequestBody OrderCreateRequestDto requestDto, HttpServletRequest servletRequest);
 
     @Operation(summary = "주문 삭제", description = "주문 삭제 API")
     @DeleteMapping("/orders/{orderId}")
-    public abstract Response<UUID> deleteOrder(@PathVariable UUID orderId);
+    public abstract Response<UUID> deleteOrder(@PathVariable UUID orderId, HttpServletRequest servletRequest);
 
     @Operation(summary = "주문 조회(단건)", description = "주문 조회 API")
     @GetMapping("/orders/{orderId}")
-    public abstract Response<OrderDetailResponseDto> getOrderById(@PathVariable UUID orderId);
+    public abstract Response<OrderDetailResponseDto> getOrderById(@PathVariable UUID orderId, HttpServletRequest servletRequest);
 
     @Operation(summary = "주문 수정", description = "주문 수정 API")
     @PatchMapping("/orders/{orderId}")
-    public abstract Response<OrderResponseDto> updateOrder(@PathVariable UUID orderId, @RequestBody OrderUpdateRequestDto requestDto);
+    public abstract Response<OrderResponseDto> updateOrder(@PathVariable UUID orderId, @RequestBody OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest);
 
     @Operation(summary = "주문 목록 조회 및 검색", description = "주문 목록 조회 및 검색 API")
     @GetMapping("/orders")
-    public abstract Response<PageResponseDto<OrderListResponseDto>>getOrders(@ModelAttribute OrderSearchRequestDto requestDto);
+    public abstract Response<PageResponseDto<OrderListResponseDto>>getOrders(@ModelAttribute OrderSearchRequestDto requestDto, HttpServletRequest servletRequest);
 
 }

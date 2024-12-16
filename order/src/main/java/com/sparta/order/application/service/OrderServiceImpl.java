@@ -16,6 +16,7 @@ import com.sparta.order.domain.model.OrderStatus;
 import com.sparta.order.domain.repository.OrderRepository;
 import com.sparta.order.domain.service.OrderService;
 import com.sparta.order.infrastructure.message.producer.KafkaProducer;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public OrderResponseDto createOrder(OrderCreateRequestDto request) {
+    public OrderResponseDto createOrder(OrderCreateRequestDto request, HttpServletRequest servletRequest) {
 
 
         ProductInfoResponseDto product = productClient.findProductById(request.productId()).getData();
@@ -75,7 +76,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public UUID deleteOrder(UUID orderId) {
+    public UUID deleteOrder(UUID orderId, HttpServletRequest servletRequest) {
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
@@ -90,7 +91,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(readOnly = true)
     @Override
-    public OrderDetailResponseDto getOrderById(UUID orderId) {
+    public OrderDetailResponseDto getOrderById(UUID orderId, HttpServletRequest servletRequest) {
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
@@ -105,7 +106,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponseDto<OrderListResponseDto> getOrders(OrderSearchRequestDto requestDto) {
+    public PageResponseDto<OrderListResponseDto> getOrders(OrderSearchRequestDto requestDto, HttpServletRequest servletRequest) {
         Page<Order> orders = findOrders(requestDto);
 
         List<UUID> recipientCompanyIds = orders.map(Order::getRecipientCompanyId).stream().distinct().toList();
@@ -130,7 +131,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto requestDto) {
+    public OrderResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest) {
 
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
