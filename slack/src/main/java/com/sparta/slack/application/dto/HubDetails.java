@@ -1,17 +1,18 @@
 package com.sparta.slack.application.dto;
 
-import com.sparta.slack.infrastructure.dto.HubOptimizeApi;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
 import java.util.List;
 import java.util.UUID;
 
-public class HubOptimization {
+public class HubDetails {
 
     public record Request(@NotNull UUID startHubId, @NotNull String endHubId){
 
     }
 
+    @Getter
     public static class Response{
 
         @NotNull
@@ -28,10 +29,6 @@ public class HubOptimization {
             this.time = time;
             this.path = path;
 
-        }
-
-        public static Response from(HubOptimizeApi.Response hubOptimizeApi){
-            return new Response(hubOptimizeApi.distance(), hubOptimizeApi.time(), hubOptimizeApi.path());
         }
 
     }

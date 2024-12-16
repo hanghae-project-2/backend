@@ -1,8 +1,12 @@
-package com.sparta.slack.infrastructure.dto;
+package com.sparta.slack.application.dto;
+
+import lombok.Getter;
 
 import java.util.UUID;
 
 public class UserDetails {
+
+    @Getter
     public static class Response{
         private final UUID id;
         private final String username;

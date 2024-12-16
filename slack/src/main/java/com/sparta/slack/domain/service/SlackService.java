@@ -1,11 +1,12 @@
 package com.sparta.slack.domain.service;
 
-import com.sparta.slack.application.dto.HubOptimization;
+import com.sparta.slack.application.dto.CompanyDetails;
+import com.sparta.slack.application.dto.HubDetails;
+import com.sparta.slack.application.dto.OrderDetails;
 import com.sparta.slack.infrastructure.dto.SlackEvent;
-import com.sparta.slack.infrastructure.dto.UserDetails;
+import com.sparta.slack.application.dto.UserDetails;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
@@ -17,8 +18,27 @@ public interface SlackService {
 
     void processSlack(SlackEvent slackEvent);
 
-    HubOptimization.Response getHubOptimizationRoute(UUID startHubId, UUID endHubId);
+    HubDetails.Response getHubOptimizationRouteById(UUID startHubId, UUID endHubId);
 
     UserDetails.Response getUserDetailsById(UUID userId);
 
+    String generateMessage(SlackEvent slackEvent);
+
+    OrderDetails.Response getOrderById(UUID orderId);
+
+    CompanyDetails.Response getCompanyById(UUID companyId);
+
+    String createRequestAddressMessage(OrderDetails.Response orderDetails);
+
+    String createStopOverMessage(UUID originHubId, UUID destinationHubId);
+
+    String createProductMessage(OrderDetails.Response orderDetails);
+
+    String createDeliverPersonMessage(UUID deliveryPersonId);
+
+    String createRequestMessage(OrderDetails.Response orderDetails);
+
+    String createOrderIdMessage(UUID orderId);
+
+    String createRecipientNameMessage(String recipientName);
 }

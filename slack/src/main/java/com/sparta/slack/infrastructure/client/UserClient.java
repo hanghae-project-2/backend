@@ -1,6 +1,6 @@
 package com.sparta.slack.infrastructure.client;
 
-import com.sparta.slack.infrastructure.dto.UserDetails;
+import com.sparta.slack.application.dto.UserDetails;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
