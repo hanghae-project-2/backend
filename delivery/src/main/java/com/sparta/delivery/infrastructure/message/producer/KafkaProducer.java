@@ -31,7 +31,8 @@ public class KafkaProducer {
                 event.recipientName(),
                 event.startHubId(),
                 event.endHubId(),
-                event.orderId()
+                event.orderId(),
+                event.createdBy()
         );
 
         kafkaTemplate.send(DELIVERY_ROUTE_TOPIC, deliveryRoute);

@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @FeignClient(name = "user-service")
 public interface UserClient {
-    //TODO : 임시 api 일뿐 희진님과 확인 필요
     @GetMapping("/users/{userId}/feign")
     UserResponseDto getUserById(@PathVariable UUID userId);
 }

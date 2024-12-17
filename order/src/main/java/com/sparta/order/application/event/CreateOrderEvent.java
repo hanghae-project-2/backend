@@ -14,7 +14,8 @@ public record CreateOrderEvent(
         Integer quantity,
         String address,
         UUID startHubId,
-        UUID endHubId
+        UUID endHubId,
+        UUID createdBy
 ) {
     public static CreateOrderEvent from(Order order, ProductInfoResponseDto product, CompanyResponseDto recipientCompany, CompanyResponseDto requestCompany) {
         return new CreateOrderEvent(
@@ -23,7 +24,8 @@ public record CreateOrderEvent(
                 order.getQuantity(),
                 recipientCompany.address(),
                 requestCompany.hubId(),
-                recipientCompany.hubId()
+                recipientCompany.hubId(),
+                order.getCreatedBy()
         );
     }
 }

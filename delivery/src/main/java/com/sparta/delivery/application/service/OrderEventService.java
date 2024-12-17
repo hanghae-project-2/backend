@@ -8,6 +8,7 @@ import com.sparta.delivery.domain.exception.DeliveryException;
 import com.sparta.delivery.domain.exception.Error;
 import com.sparta.delivery.domain.model.Delivery;
 import com.sparta.delivery.domain.repository.DeliveryRepository;
+import com.sparta.delivery.infrastructure.client.DeliveryPersonClient;
 import com.sparta.delivery.infrastructure.client.UserClient;
 import com.sparta.delivery.infrastructure.message.producer.KafkaProducer;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +26,14 @@ public class OrderEventService {
     private final DeliveryRepository deliveryRepository;
     private final KafkaProducer kafkaProducer;
     private final UserClient userClient;
+    private final DeliveryPersonClient deliveryPersonClient;
 
     @Transactional
     public void createDelivery(DeliveryEvent event){
 
         //TODO : feignClient로 배송담당자, 유저이름, 슬랙 ID 받아오기
-        UUID deliveryPersonId = UUID.randomUUID();
-        UserResponseDto user = userClient.getUserById(UUID.randomUUID());
+        UUID deliveryPersonId = deliveryPersonClient.getDeliveryPersonByUserId(event.createdBy());
+        UserResponseDto user = userClient.getUserById(event.createdBy());
 
         Delivery delivery = deliveryRepository.save(
                 Delivery.create(event, deliveryPersonId, user)

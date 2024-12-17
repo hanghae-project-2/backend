@@ -14,7 +14,8 @@ public record CreateDeliveryEvent(
         String deliveryAddress,
         UUID recipientSlackId,
         String recipientName,
-        UUID orderId
+        UUID orderId,
+        UUID createdBy
 ) {
     public static CreateDeliveryEvent from(Delivery delivery, UUID orderId) {
         return new CreateDeliveryEvent(
@@ -25,7 +26,8 @@ public record CreateDeliveryEvent(
                 delivery.getDeliveryAddress(),
                 delivery.getRecipientSlackId(),
                 delivery.getRecipientName(),
-                orderId
+                orderId,
+                delivery.getCreatedBy()
         );
     }
 }

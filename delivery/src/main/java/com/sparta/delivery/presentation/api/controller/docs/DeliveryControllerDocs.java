@@ -8,6 +8,10 @@ import com.sparta.delivery.application.dto.response.PageResponseDto;
 import com.sparta.delivery.domain.model.DeliveryStatus;
 import com.sparta.delivery.presentation.api.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
@@ -20,6 +24,13 @@ import java.util.UUID;
 public abstract class DeliveryControllerDocs {
 
 
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "20",
+                    description = "배송 조회 성공",
+                    content = @Content(schema = @Schema(implementation = Response.class))
+            )
+    })
     @Operation(summary = "배송 조회(단건)", description ="배송 조회 API"  )
     @GetMapping("/deliveries/{deliveryId}")
     public abstract Response<DeliveryDetailResponseDto> getDeliveryById(@PathVariable UUID deliveryId, HttpServletRequest servletRequest);
