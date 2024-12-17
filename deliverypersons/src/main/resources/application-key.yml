@@ -2,7 +2,7 @@ EUREKA_NAME: localhost
 EUREKA_HOST: eureka
 EUREKA_PORT: 9090
 
-SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/delivery-persons
+SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3313/delivery-persons
 SPRING_DATASOURCE_USERNAME: root
 SPRING_DATASOURCE_PASSWORD: root1234
 
