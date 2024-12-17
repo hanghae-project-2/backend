@@ -8,7 +8,7 @@ management:
         include: metrics, health, info
   metrics:
     tags:
-      application: user-server
+      application: user-service
 
 spring:
   application:
@@ -94,7 +94,7 @@ eureka:
   instance:
     initial-status: up
     prefer-ip-address: false
-    instance-id: user-server
+    instance-id: user-service
   client:
     service-url:
       defaultZone: http://${EUREKA_NAME}:${EUREKA_PORT}/${EUREKA_HOST}/
