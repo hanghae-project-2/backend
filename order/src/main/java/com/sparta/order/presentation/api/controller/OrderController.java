@@ -12,8 +12,6 @@ import com.sparta.order.presentation.api.controller.docs.OrderControllerDocs;
 import com.sparta.order.presentation.api.response.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +26,7 @@ public class OrderController extends OrderControllerDocs {
 
     @PostMapping()
     @Override
-    public Response<OrderResponseDto> createOrder(OrderCreateRequestDto requestDto, HttpServletRequest servletRequest) {
+    public Response<UUID> createOrder(OrderCreateRequestDto requestDto, HttpServletRequest servletRequest) {
         return new Response<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase(), orderService.createOrder(requestDto, servletRequest));
     }
 
@@ -36,19 +34,19 @@ public class OrderController extends OrderControllerDocs {
 
     @DeleteMapping("/{orderId}")
     @Override
-    public Response<UUID> deleteOrder(@PathVariable UUID orderId, HttpServletRequest servletRequest) {
+    public Response<UUID> deleteOrder(@PathVariable java.util.UUID orderId, HttpServletRequest servletRequest) {
         return new Response<>(HttpStatus.NO_CONTENT.value(),HttpStatus.NO_CONTENT.getReasonPhrase(), orderService.deleteOrder(orderId, servletRequest));
     }
 
     @GetMapping("/{orderId}")
     @Override
-    public Response<OrderDetailResponseDto> getOrderById(@PathVariable UUID orderId, HttpServletRequest servletRequest) {
+    public Response<OrderDetailResponseDto> getOrderById(@PathVariable java.util.UUID orderId, HttpServletRequest servletRequest) {
         return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), orderService.getOrderById(orderId, servletRequest));
     }
 
     @PatchMapping("/{orderId}")
     @Override
-    public Response<OrderResponseDto> updateOrder(@PathVariable UUID orderId, @RequestBody OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest) {
+    public Response<UUID> updateOrder(@PathVariable java.util.UUID orderId, @RequestBody OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest) {
 
         return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), orderService.updateOrder(orderId, requestDto, servletRequest));
     }

@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public OrderResponseDto createOrder(OrderCreateRequestDto request, HttpServletRequest servletRequest) {
+    public UUID createOrder(OrderCreateRequestDto request, HttpServletRequest servletRequest) {
 
         String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
         if(userRole==null){
@@ -72,11 +72,7 @@ public class OrderServiceImpl implements OrderService {
         CreateOrderEvent eventDto = CreateOrderEvent.from(order, product, recipientCompany, requestCompany);
         kafkaProducer.send(eventDto);
 
-        UUID deliveryId = deliveryClient.getDeliveryByOrderId(order.getId());
-
-        return OrderResponseDto.builder()
-                .deliveryId(deliveryId)
-                .orderId(order.getId()).build();
+        return order.getId();
 
     }
 
@@ -129,7 +125,7 @@ public class OrderServiceImpl implements OrderService {
         CompanyResponseDto recipientCompany = companyClient.findCompanyById(order.getRecipientCompanyId());
         ProductInfoResponseDto product = productClient.findProductById(order.getProductId());
         CompanyResponseDto requestCompany = companyClient.findCompanyById(product.companyId());
-        UUID deliveryId = deliveryClient.getDeliveryByOrderId(orderId);
+        java.util.UUID deliveryId = deliveryClient.getDeliveryByOrderId(orderId);
 
         return OrderDetailResponseDto.from(order, recipientCompany,requestCompany ,product, deliveryId);
     }
@@ -161,7 +157,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest) {
+    public UUID updateOrder(UUID orderId, OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest) {
 
         UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
         String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
@@ -177,14 +173,9 @@ public class OrderServiceImpl implements OrderService {
             checkHubAdmin(userId, order.getProductId(), order.getRecipientCompanyId());
         }
 
-        UUID deliveryId = deliveryClient.getDeliveryByOrderId(orderId);
-
         order.updateOrder(requestDto);
 
-        return OrderResponseDto.builder()
-                .orderId(order.getId())
-                .deliveryId(deliveryId)
-                .build();
+        return orderId;
     }
 
     private Page<Order> findOrders(OrderSearchRequestDto requestDto) {
