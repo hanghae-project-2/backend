@@ -78,6 +78,12 @@ Kafka Consumer를 통해 order 서비스에서 발행된 이벤트를 수신하�
 Kafak Consumer를 통해 delivery 서비스를 수신하고 hub, company, order, user 등에 feignclient를 통해 메세지를 generate하여 slack으로 발행
 
 
+### **user 서비스**
+인증/인가와 사용자의 생성, 수정, 삭제, 조회 기능을 제공하며 회원 관리를 담당.</br>
+중요 API에는 AOP 기반의 사용자 상태 검증을 적용해 삭제된 사용자나 비활성화된 사용자의 접근을 차단.
+
+### **deliverypersons 서비스**
+배송 담당자를 관리하는 서비스로, 배송 담당자의 생성, 수정, 삭제, 조회 기능을 제공.</br>
 
 ---
 
