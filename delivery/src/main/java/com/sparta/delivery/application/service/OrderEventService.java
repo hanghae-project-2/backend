@@ -32,7 +32,7 @@ public class OrderEventService {
     public void createDelivery(DeliveryEvent event){
 
         //TODO : feignClient로 배송담당자, 유저이름, 슬랙 ID 받아오기
-        UUID deliveryPersonId = deliveryPersonClient.getDeliveryPersonByUserId(event.createdBy());
+        UUID deliveryPersonId = deliveryPersonClient.getDeliveryPersonFeignClient();
         UserResponseDto user = userClient.getUserById(event.createdBy());
 
         Delivery delivery = deliveryRepository.save(

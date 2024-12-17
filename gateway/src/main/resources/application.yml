@@ -60,6 +60,10 @@ spring:
           uri: lb://order-service
           predicates:
             - Path=/orders/**
+        - id: delivery-persons-server
+          uri: lb://delivery-persons-server
+          predicates:
+            - Path=/deliverypersons/**
 
 springdoc:
   swagger-ui:
