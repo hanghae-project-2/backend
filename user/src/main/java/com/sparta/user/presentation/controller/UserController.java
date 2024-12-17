@@ -3,6 +3,7 @@ package com.sparta.user.presentation.controller;
 import com.sparta.user.application.service.UserService;
 import com.sparta.user.common.CustomException;
 import com.sparta.user.common.ErrorCode;
+import com.sparta.user.common.annotation.CheckUserStatus;
 import com.sparta.user.domain.UserRole;
 import com.sparta.user.infrastructure.security.CustomUserDetailsImpl;
 import com.sparta.user.presentation.dto.request.UpdateUserRequest;
@@ -29,6 +30,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
+    @CheckUserStatus
     public Response<UserResponse> getUserById(@PathVariable UUID id) {
 
         UserResponse user = userService.getUserById(id);
@@ -42,6 +44,7 @@ public class UserController {
 
     @GetMapping
     @Secured(UserRole.Authority.MASTER)
+    @CheckUserStatus
     public Response<Page<UserResponse>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -57,6 +60,7 @@ public class UserController {
 
     @PatchMapping("/{userId}/approval")
     @Secured(UserRole.Authority.MASTER)
+    @CheckUserStatus
     public Response<String> approveUser(
             @PathVariable UUID userId,
             @RequestBody UserApprovalRequest request,
@@ -72,6 +76,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
+    @CheckUserStatus
     public Response<String> updateUser(
             @PathVariable UUID id,
             @RequestBody UpdateUserRequest request,
@@ -92,6 +97,7 @@ public class UserController {
 
     @PatchMapping("/{id}/role")
     @Secured(UserRole.Authority.MASTER)
+    @CheckUserStatus
     public Response<String> updateUserRole(
             @PathVariable UUID id,
             @RequestBody @Valid UpdateUserRoleRequest request,
@@ -111,6 +117,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @CheckUserStatus
     public Response<String> deleteUser(
             @PathVariable UUID id,
             @AuthenticationPrincipal CustomUserDetailsImpl userDetails) {

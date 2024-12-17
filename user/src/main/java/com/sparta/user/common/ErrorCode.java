@@ -20,7 +20,9 @@ public enum ErrorCode {
 
     // 인증 관련 에러
     INVALID_OR_EXPIRED_TOKEN("유효하지 않거나 만료된 토큰입니다.", HttpStatus.UNAUTHORIZED),
-    UNKNOWN_TOKEN_TYPE("토큰 타입이 확인되지 않았습니다.", HttpStatus.BAD_REQUEST);
+    UNKNOWN_TOKEN_TYPE("토큰 타입이 확인되지 않았습니다.", HttpStatus.BAD_REQUEST),
+    UNAUTHORIZED("권한이 없습니다.", HttpStatus.UNAUTHORIZED),
+    FORBIDDEN_ACCESS("접근이 금지되었습니다.", HttpStatus.FORBIDDEN);
 
     private final String message;
     private final HttpStatus status;
