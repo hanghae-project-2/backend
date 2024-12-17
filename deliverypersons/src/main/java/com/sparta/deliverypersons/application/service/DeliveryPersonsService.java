@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.UUID;
 
@@ -135,6 +136,20 @@ public class DeliveryPersonsService {
     private int calculateNextSequence(DeliveryType type, UUID hubId) {
         return deliveryPersonsJpaRepository.findMaxSequenceByTypeAndHubId(type, hubId)
                 .orElse(0) + 1;
+    }
+
+    public UUID getRandomDeliveryPersonId() {
+        byte[] binaryId = deliveryPersonsJpaRepository.findRandomDeliveryPersonId()
+                .orElseThrow(() -> new IllegalStateException("No delivery person found"));
+
+        return convertToUUID(binaryId);
+    }
+
+    public UUID convertToUUID(byte[] bytes) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        long high = byteBuffer.getLong();
+        long low = byteBuffer.getLong();
+        return new UUID(high, low);
     }
 
 }
