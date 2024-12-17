@@ -58,46 +58,33 @@
 
 ## 🚀 **주요 기능**
 
-### **1. 배송 요청 생성**
-요청 정보 입력 시 `요청됨` 상태로 배송 생성  
-```
-@PostMapping("/deliveries")  
-public ResponseEntity<?> createDelivery(@RequestBody DeliveryRequest request) {  
-    deliveryService.createDelivery(request);  
-    return ResponseEntity.ok().build();  
-}
-```
+### **1. 주문 기능 ** 
+
+* 사용자가 주문을 생성하고 관리할 수 있도록 하는 주문 생성, 수정, 조회 기능을 개발
+* 주문 생성 이벤트를 Kafka를 통해 다른 서비스와 비동기로 통신하도록 구현
 
 ---
 
-### **2. 배송 상태 업데이트**
-배송 상태를 `요청됨` → `배송 중` → `배송 완료` 순으로 업데이트  
-Redis를 통한 동시성 제어 및 Resilience4j로 Fallback 처리  
+### **2. 배송 기능**
+* 주문 데이터를 기반으로 배송 정보를 처리하는 배송 생성, 수정, 삭제, 조회 기능을 구현
+* Kafka Consumer를 통해 order 서비스에서 발생한 이벤트를 실시간으로 수신하고 배송 상태를 업데이트하는 로직을 추가, 배송 생성 이벤트를 Kafka를 통해 다른 서비스와 비동기로 통신하도록 구현
 
 ---
 
-### **3. 배송 이력 조회**
-QueryDSL을 사용하여 동적 검색 기능 제공  
-조건: 사용자 ID, 배송 상태, 기간  
-
----
-
-### **4. 데이터 마이그레이션**
-Spring Batch를 사용하여 **6개월 이상 지난 데이터를 MongoDB로 이관**  
 
 ---
 
 ## 🛠️ **트러블 슈팅**
 
-### **1. 동시성 문제**
-- **문제**: 동시에 배송 상태를 변경하는 요청 발생.  
-- **해결**: Redis의 분산 락과 Fallback 메서드를 활용.
+### **1. JsonDeserializer 역직렬화 문제**
+- **문제**:  Kafka Consumer를 설정하던 중 JsonDeserializer가 역직렬화할 대상 클래스를 찾지 못하면서 ClassNotFoundException이 발생
+- **해결**: Kafka 설정 파일인 KafkaConsumerConfig.java에 다른 코드들을 지운 뒤 kafkaTemplate 설정 코드만 남기고 yml의 kafka 설정을 통해 해결
 
-### **2. 데이터 누적 문제**
-- **문제**: 오래된 데이터로 인해 조회 성능 저하.  
+### **2. **
+- **문제**: 
 - **해결**: 
-  1. **MariaDB 인덱스 설정**  
-  2. **MongoDB로 데이터 이관**  
+  1. 
+  2.  
 
 ---
 
@@ -135,6 +122,7 @@ java -jar delivery_service-0.0.1-SNAPSHOT.jar
 - 메시지 큐(Kafka, RabbitMQ)를 사용해 이벤트 기반 시스템으로 개선.
 - ElasticSearch를 활용하여 배송 이력 조회 성능 최적화.
 - JPA Custom Repository 패턴 적용으로 코드 유연성 향상.
+- Test를 세분화해 진행 필요. 
 
 ---
 
@@ -142,3 +130,8 @@ java -jar delivery_service-0.0.1-SNAPSHOT.jar
 1. **이슈 생성**: 문제나 기능 단위로 이슈를 생성합니다.  
 2. **브랜치 생성**: 기능별 브랜치에서 개발을 진행합니다.  
 3. **Pull Request**: 코드 리뷰를 통해 병합합니다.
+
+## **소감**
+* 혜정 : 짧은 시간동안 너무나 부족한 점을 많이 느끼고 또 공부의 필요성을 느꼈던 2주 였습니다.
+  그동안 접해보지 못했던 새로운 기술들과 구조를 배울 수 있던 좋은 시간이었던거 같습니다!
+  다들 많이 도와주시고 알려주셔서 감사합니다!
