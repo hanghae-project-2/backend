@@ -124,6 +124,31 @@ public class GlobalExceptionHandler {
 }
 ```
 
+
+### **3. 회원 삭제 시 접근 제한 문제 (희진)**
+- **문제**: 회원이 삭제되었더라도 이미 발급된 JWT 토큰이 유효한 상태라면 서버에 접근할 수 있는 문제가 발생했습니다.
+- **해결**: 
+1. 레디스 기반 블랙리스트를 사용해 토큰을 무효화하려 했으나, 이미 발급된 토큰을 서버가 알 수 없어 실시간 차단이 어려웠습니다.
+2. AOP 기반의 횡단 관심사 처리를 통해 공통 검증 로직을 구현했습니다.
+3. @CheckUserStatus 어노테이션을 생성하여 중요 API에만 사용자 상태 검증을 적용.
+4. AOP를 통해 API 진입 시점에서 사용자 상태를 검증하도록 구현했습니다.
+
+```java
+@GetMapping("/{id}")
+@CheckUserStatus
+public Response<UserResponse> getUserById(@PathVariable UUID id) {
+
+    UserResponse user = userService.getUserById(id);
+
+    return new Response<>(
+            HttpStatus.OK.value(),
+            HttpStatus.OK.getReasonPhrase(),
+            user
+    );
+}
+```
+
+
 ---
 
 
