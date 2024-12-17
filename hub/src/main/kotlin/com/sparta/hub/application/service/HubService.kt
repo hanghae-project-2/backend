@@ -12,6 +12,7 @@ import com.sparta.hub.application.dto.response.HubRouteDetailResponseDto
 import com.sparta.hub.application.dto.response.HubSummaryResponseDto
 import com.sparta.hub.application.dto.response.toResponseDto
 import com.sparta.hub.application.dto.toRouteInfo
+import com.sparta.hub.application.exception.AccessDeniedException
 import com.sparta.hub.application.exception.NotFoundHubException
 import com.sparta.hub.application.exception.UnableCalculateRouteException
 import com.sparta.hub.domain.model.Hub
@@ -62,6 +63,12 @@ class HubService(
     @Transactional
     fun registerHub(servletRequest: HttpServletRequest, hubAddress: String, hubName: String): UUID {
 
+        val userId = servletRequest.getHeader("X-Authenticated-User-Id")
+        val userRole = servletRequest.getHeader("X-Authenticated-User-Role")
+
+        if (userRole != "MASTER") {
+            throw AccessDeniedException()
+        }
         val result = findLatitudeAndLongitude(hubAddress)
 
         val hub = Hub(
@@ -69,7 +76,7 @@ class HubService(
             address = hubAddress,
             latitude = result?.get("latitude") ?: throw UnableCalculateRouteException(),
             longitude = result["longitude"] ?: throw UnableCalculateRouteException(),
-            createdBy = servletRequest.getHeader("X-Authenticated-User-Id")
+            createdBy = userId
         )
 
         return hubRepository.save(hub).id!!
@@ -79,6 +86,13 @@ class HubService(
 //    TODO: 마스터 사용자 Id를 가지고 있어야 자동실행 가능
 //    @Scheduled(cron = "0 0 0 * * *")
     fun navigateHubRoutes(servletRequest: HttpServletRequest) {
+
+        val userId = servletRequest.getHeader("X-Authenticated-User-Id")
+        val userRole = servletRequest.getHeader("X-Authenticated-User-Role")
+
+        if (userRole != "MASTER") {
+            throw AccessDeniedException()
+        }
 
         val hubRoutes = hubRouteRepository.findAll()
         val hubs = hubRoutes.mapNotNull { it.startHub }.distinct()
@@ -174,6 +188,14 @@ class HubService(
 
     @Transactional
     fun modifyHub(servletRequest: HttpServletRequest, hubId: UUID, hubRequestDto: HubRequestDto): UUID {
+
+        val userId = servletRequest.getHeader("X-Authenticated-User-Id")
+        val userRole = servletRequest.getHeader("X-Authenticated-User-Role")
+
+        if (userRole != "MASTER") {
+            throw AccessDeniedException()
+        }
+
         val hub = hubRepository.findByIdOrNull(hubId) ?: throw NotFoundHubException()
 
         val latitudeAndLongitude = findLatitudeAndLongitude(hubRequestDto.address)
@@ -182,7 +204,7 @@ class HubService(
         val longitude = latitudeAndLongitude?.get("longitude")
 
         if (hubRequestDto.isDelete) {
-            hub.markAsDelete(servletRequest.getHeader("X-Authenticated-User-Id"))
+            hub.markAsDelete(userId)
         }
 
         hub.updateInfo(
@@ -190,7 +212,7 @@ class HubService(
             longitude,
             hubRequestDto.name,
             hubRequestDto.manager,
-            servletRequest.getHeader("X-Authenticated-User-Id")
+            userId
         )
 
         return hubRepository.save(hub).id!!
@@ -226,6 +248,11 @@ class HubService(
     @Transactional(readOnly = true)
     fun findHubRoutesByHubRouteId(hubRouteIdList: List<UUID>): List<HubRouteDetailResponseDto> {
         return hubRouteRepository.findByIds(hubRouteIdList)
+    }
+
+    @Transactional(readOnly = true)
+    fun findHubByUserId(userId: UUID): UUID {
+        return hubRepository.findByManager(userId)?.id ?: throw NotFoundHubException()
     }
 
     private fun updateForOptimalHubRoutes(hubRoutes: List<HubRoute>) {

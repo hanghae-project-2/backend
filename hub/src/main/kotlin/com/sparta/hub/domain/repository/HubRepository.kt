@@ -19,6 +19,8 @@ interface HubRepository {
 
     fun existsById(id: UUID): Boolean
 
+    fun findByManager(manager: UUID): Hub?
+
     fun findByIds(ids: List<UUID>): List<Hub>
 
     fun findPageBy(pageRequest: Pageable, searchRequestDto: HubSearchRequestDto): Page<HubSummaryResponseDto>

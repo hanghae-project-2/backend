@@ -34,12 +34,12 @@ class Company(
     var address: String = address
         protected set
 
-    var manager: UUID? = null
+    var manager: UUID? = UUID.randomUUID()
         protected set
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID = UUID.randomUUID()
+    val id: UUID? = null
 
     constructor(
         name: String,

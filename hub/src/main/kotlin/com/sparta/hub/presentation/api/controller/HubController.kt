@@ -2,7 +2,6 @@ package com.sparta.hub.presentation.api.controller
 
 import com.sparta.hub.application.dto.RouteResult
 import com.sparta.hub.application.service.HubService
-import com.sparta.hub.libs.RoleValidation
 import com.sparta.hub.presentation.api.controller.docs.HubControllerDocs
 import com.sparta.hub.presentation.api.request.HubRequest
 import com.sparta.hub.presentation.api.request.HubSearchRequest
@@ -32,7 +31,6 @@ class HubController(
 ) : HubControllerDocs() {
 
     @PostMapping
-    @RoleValidation("MASTER")
     override fun registerHub(
         @RequestParam address: String,
         @RequestParam hubName: String,
@@ -45,7 +43,6 @@ class HubController(
         )
 
     @PatchMapping("/navigate")
-    @RoleValidation("MASTER")
     override fun navigateHubRoutes(
         servletRequest: HttpServletRequest
     ): Response<Unit> =
@@ -56,7 +53,6 @@ class HubController(
         )
 
     @GetMapping("/routes/name")
-    @RoleValidation("ANY_ROLE")
     override fun findHubRoutesByName(
         @RequestParam startHubName: String,
         @RequestParam endHubName: String
@@ -68,7 +64,6 @@ class HubController(
         )
 
     @GetMapping("/search")
-    @RoleValidation("ANY_ROLE")
     override fun searchHubs(
         pageable: Pageable,
         hubSearchRequest: HubSearchRequest
@@ -80,7 +75,6 @@ class HubController(
         )
 
     @GetMapping("/{hubId}")
-    @RoleValidation("ANY_ROLE")
     override fun getHubDetail(
         @PathVariable hubId: UUID
     ): Response<HubDetailResponse> =
@@ -91,7 +85,6 @@ class HubController(
         )
 
     @PatchMapping("/{hubId}")
-    @RoleValidation("MASTER")
     override fun modifyHub(
         @PathVariable hubId: UUID,
         @RequestBody request: HubRequest,

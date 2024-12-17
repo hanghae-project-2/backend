@@ -9,6 +9,6 @@ data class BaseCompanyResponseDto(
 )
 
 fun Company.toBaseResponseDto() = BaseCompanyResponseDto(
-    companyId = this.id,
+    companyId = this.id!!,
     companyName = this.name,
 )

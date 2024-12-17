@@ -1,8 +1,11 @@
 package com.sparta.user.infrastructure.security;
 
-import com.sparta.user.presentation.dto.response.AuthResponse;
 import com.sparta.user.domain.User;
-import io.jsonwebtoken.*;
+import com.sparta.user.presentation.dto.response.AuthResponse;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +17,12 @@ import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Slf4j(topic = "JWT 관련 로그")
 @Component
@@ -46,8 +54,10 @@ public class JwtUtil {
         String token = Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("tokenType", "access")
+                .claim("userId", user.getId())
                 .claim("username", user.getUsername())
                 .claim("role", user.getRole())
+                .claim("userId", user.getId())
                 .setIssuer(issuer)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessExpiration))
@@ -55,8 +65,8 @@ public class JwtUtil {
                 .compact();
 
         // Redis에 AccessToken 저장
-        String redisKey = "token:" + user.getUsername() + ":access";
-        redisTemplate.opsForValue().set(redisKey, token, Duration.ofMillis(accessExpiration));
+//        String redisKey = "token:" + user.getUsername() + ":access";
+//        redisTemplate.opsForValue().set(redisKey, token, Duration.ofMillis(accessExpiration));
 
         return AuthResponse.of(BEARER_PREFIX + token);
     }
@@ -71,8 +81,8 @@ public class JwtUtil {
                 .compact();
 
         // Redis에 RefreshToken 저장
-        String redisKey = "token:" + username + ":refresh";
-        redisTemplate.opsForValue().set(redisKey, token, Duration.ofMillis(REFRESH_TOKEN_TIME));
+//        String redisKey = "token:" + username + ":refresh";
+//        redisTemplate.opsForValue().set(redisKey, token, Duration.ofMillis(REFRESH_TOKEN_TIME));
 
         return BEARER_PREFIX + token;
     }
