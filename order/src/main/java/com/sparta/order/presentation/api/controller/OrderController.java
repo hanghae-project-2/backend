@@ -8,7 +8,6 @@ import com.sparta.order.application.dto.response.OrderListResponseDto;
 import com.sparta.order.application.dto.response.OrderResponseDto;
 import com.sparta.order.application.dto.response.PageResponseDto;
 import com.sparta.order.domain.service.OrderService;
-import com.sparta.order.libs.RoleValidation;
 import com.sparta.order.presentation.api.controller.docs.OrderControllerDocs;
 import com.sparta.order.presentation.api.response.Response;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,14 +27,13 @@ public class OrderController extends OrderControllerDocs {
     private final OrderService orderService;
 
     @PostMapping()
-    @RoleValidation( roles = {"ANY_ROLE"})
     @Override
     public Response<OrderResponseDto> createOrder(OrderCreateRequestDto requestDto, HttpServletRequest servletRequest) {
         return new Response<>(HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase(), orderService.createOrder(requestDto, servletRequest));
     }
 
 
-    @RoleValidation(roles = {"MASTER", "HUB_ADMIN"})
+
     @DeleteMapping("/{orderId}")
     @Override
     public Response<UUID> deleteOrder(@PathVariable UUID orderId, HttpServletRequest servletRequest) {
@@ -43,13 +41,11 @@ public class OrderController extends OrderControllerDocs {
     }
 
     @GetMapping("/{orderId}")
-    @RoleValidation(roles = {"ANY_ROLE"})
     @Override
     public Response<OrderDetailResponseDto> getOrderById(@PathVariable UUID orderId, HttpServletRequest servletRequest) {
         return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), orderService.getOrderById(orderId, servletRequest));
     }
 
-    @RoleValidation(roles = {"MASTER", "HUB_ADMIN"})
     @PatchMapping("/{orderId}")
     @Override
     public Response<OrderResponseDto> updateOrder(@PathVariable UUID orderId, @RequestBody OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest) {
@@ -57,7 +53,6 @@ public class OrderController extends OrderControllerDocs {
         return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase(), orderService.updateOrder(orderId, requestDto, servletRequest));
     }
 
-    @RoleValidation(roles={"ANY_ROLE"})
     @GetMapping
     @Override
     public Response<PageResponseDto<OrderListResponseDto>> getOrders(@ModelAttribute OrderSearchRequestDto requestDto, HttpServletRequest servletRequest) {
