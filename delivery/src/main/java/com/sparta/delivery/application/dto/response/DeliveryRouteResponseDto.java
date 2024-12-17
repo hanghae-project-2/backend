@@ -9,11 +9,9 @@ public record DeliveryRouteResponseDto(
         UUID startHubId,
         String startHubName,
         UUID endHubId,
-        String endHubName,
-        Double estimatedDistance,
-        String estimatedDuration,//타입얘기
-        Double actualDistance,
-        String actualDuration,//타입얘기
+        String endHubName,//타입얘기
+        Integer actualDistance,
+        Integer actualDuration,//타입얘기
         String deliveryRouteStatus
 ) {
 }

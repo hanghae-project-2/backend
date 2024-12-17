@@ -10,6 +10,7 @@ public record SlackEvent(
         String recipientName,
         UUID startHubId,
         UUID endHubId,
-        UUID orderId
+        UUID orderId,
+        UUID createdBy
 ) {
 }

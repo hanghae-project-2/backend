@@ -9,6 +9,7 @@ public record DeliveryEvent(
         UUID orderId,
         String address,
         UUID startHubId,
-        UUID endHubId
+        UUID endHubId,
+        UUID createdBy
 ) {
 }

@@ -101,7 +101,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isExcludedUri(String uri) {
-        return uri.startsWith("/users/signIn") || uri.startsWith("/users/signUp");
+        return uri.startsWith("/auth/signIn") || uri.startsWith("/auth/signUp");
     }
 
 }

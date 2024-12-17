@@ -8,6 +8,7 @@ import com.sparta.order.application.dto.response.*;
 import com.sparta.order.application.event.DeleteEvent;
 import com.sparta.order.infrastructure.client.CompanyClient;
 import com.sparta.order.infrastructure.client.DeliveryClient;
+import com.sparta.order.infrastructure.client.HubClient;
 import com.sparta.order.infrastructure.client.ProductClient;
 import com.sparta.order.domain.exception.Error;
 import com.sparta.order.domain.exception.OrderException;
@@ -16,6 +17,7 @@ import com.sparta.order.domain.model.OrderStatus;
 import com.sparta.order.domain.repository.OrderRepository;
 import com.sparta.order.domain.service.OrderService;
 import com.sparta.order.infrastructure.message.producer.KafkaProducer;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -35,13 +37,14 @@ public class OrderServiceImpl implements OrderService {
     private final ProductClient productClient;
     private final DeliveryClient deliveryClient;
     private final KafkaProducer kafkaProducer;
+    private final HubClient hubClient;
 
 
     @Override
-    public OrderResponseDto createOrder(OrderCreateRequestDto request) {
+    public OrderResponseDto createOrder(OrderCreateRequestDto request, HttpServletRequest servletRequest) {
 
 
-        ProductInfoResponseDto product = productClient.findProductById(request.productId()).getData();
+        ProductInfoResponseDto product = productClient.findProductById(request.productId());
 
         if (product.amount() < request.quantity()){
             throw new OrderException(Error.OUT_OF_STOCK);
@@ -75,28 +78,42 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public UUID deleteOrder(UUID orderId) {
+    public UUID deleteOrder(UUID orderId, HttpServletRequest servletRequest) {
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
 
-        //TODO : userID 로 바꾸기
-        order.deleteOrder(orderId);
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
 
-        kafkaProducer.delete(new DeleteEvent(orderId));
+        if (servletRequest.getHeader("X-Authenticated-User-Role").equals("HUB_ADMIN")){
+            checkHubAdmin(userId, order.getProductId(), order.getRecipientCompanyId());
+        }
+
+        order.deleteOrder(userId);
+
+        kafkaProducer.delete(new DeleteEvent(orderId,userId));
 
         return orderId;
     }
 
     @Transactional(readOnly = true)
     @Override
-    public OrderDetailResponseDto getOrderById(UUID orderId) {
+    public OrderDetailResponseDto getOrderById(UUID orderId, HttpServletRequest servletRequest) {
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
 
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+
+        if (userRole.equals("HUB_ADMIN")){
+            checkHubAdmin(userId, order.getProductId(), order.getRecipientCompanyId());
+        } else if ((userRole.equals("COMPANY_ADMIN")||userRole.equals("DELIVERY_PERSON"))&& (!userId.equals(order.getCreatedBy()))) {
+            throw new OrderException(Error.FORBIDDEN);
+        }
+
         CompanyResponseDto recipientCompany = companyClient.findCompanyById(order.getRecipientCompanyId());
-        ProductInfoResponseDto product = productClient.findProductById(order.getProductId()).getData();
+        ProductInfoResponseDto product = productClient.findProductById(order.getProductId());
         CompanyResponseDto requestCompany = companyClient.findCompanyById(product.companyId());
         UUID deliveryId = deliveryClient.getDeliveryByOrderId(orderId);
 
@@ -105,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponseDto<OrderListResponseDto> getOrders(OrderSearchRequestDto requestDto) {
+    public PageResponseDto<OrderListResponseDto> getOrders(OrderSearchRequestDto requestDto, HttpServletRequest servletRequest) {
         Page<Order> orders = findOrders(requestDto);
 
         List<UUID> recipientCompanyIds = orders.map(Order::getRecipientCompanyId).stream().distinct().toList();
@@ -130,11 +147,17 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto requestDto) {
+    public OrderResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest) {
 
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
+
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+
+        if (servletRequest.getHeader("X-Authenticated-User-Role").equals("HUB_ADMIN")){
+            checkHubAdmin(userId, order.getProductId(), order.getRecipientCompanyId());
+        }
 
         UUID deliveryId = deliveryClient.getDeliveryByOrderId(orderId);
 
@@ -157,4 +180,17 @@ public class OrderServiceImpl implements OrderService {
         }
         return orderRepository.searchOrders(requestDto);
     }
+
+    private void checkHubAdmin(UUID userId, UUID productId, UUID recipientCompanyId){
+        UUID targetHubId = hubClient.findHubByUserId(userId);
+        CompanyResponseDto recipientCompany = companyClient.findCompanyById(recipientCompanyId);
+        ProductInfoResponseDto product = productClient.findProductById(productId);
+        CompanyResponseDto requestCompany = companyClient.findCompanyById(product.companyId());
+
+        if(!targetHubId.equals(recipientCompany.hubId()) && !targetHubId.equals(requestCompany.hubId())){
+            throw new OrderException(Error.FORBIDDEN);
+        }
+
+    }
+
 }

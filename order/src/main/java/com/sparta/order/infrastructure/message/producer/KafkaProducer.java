@@ -26,7 +26,8 @@ public class KafkaProducer {
 
         DeliveryEvent delivery = DeliveryEvent.builder()
                 .orderId(event.orderId()).address(event.address())
-                        .startHubId(event.startHubId()).endHubId(event.endHubId()).build();
+                        .startHubId(event.startHubId()).endHubId(event.endHubId())
+                .createdBy(event.createdBy()).build();
 
         kafkaTemplate.send(DELIVERY_TOPIC, delivery);
         kafkaTemplate.send(PRODUCT_TOPIC, product);

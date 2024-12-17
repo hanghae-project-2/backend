@@ -1,5 +1,7 @@
 package com.sparta.delivery.infrastructure.config;
 
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -10,10 +12,17 @@ import java.util.UUID;
 
 @EnableJpaAuditing
 @Configuration
+@RequiredArgsConstructor
 public class JpaConfig {
+
+    private final HttpServletRequest request;
+
     @Bean
     public AuditorAware<UUID> auditorAware() {
-        // 고정 UUID 반환
-        return () -> Optional.of(UUID.fromString("2b6119b0-69bd-4749-8505-dadb171a5b1d"));
+        return () -> {
+            String userId = request.getHeader("X-Authenticated-User-Id");
+
+            return Optional.ofNullable(userId).map(UUID::fromString);
+        };
     }
 }

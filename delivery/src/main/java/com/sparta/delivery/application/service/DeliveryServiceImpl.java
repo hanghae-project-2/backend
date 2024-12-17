@@ -1,7 +1,9 @@
 package com.sparta.delivery.application.service;
 
+import com.sparta.delivery.application.dto.request.DeliveryComplateRequestDto;
 import com.sparta.delivery.application.dto.request.DeliverySearchRequestDto;
 import com.sparta.delivery.application.dto.response.*;
+import com.sparta.delivery.application.event.DeleteEvent;
 import com.sparta.delivery.domain.exception.DeliveryException;
 import com.sparta.delivery.domain.exception.Error;
 import com.sparta.delivery.domain.model.Delivery;
@@ -11,6 +13,8 @@ import com.sparta.delivery.domain.service.DeliveryService;
 import com.sparta.delivery.infrastructure.client.DeliveryRouteClient;
 import com.sparta.delivery.infrastructure.client.HubClient;
 import com.sparta.delivery.infrastructure.client.UserClient;
+import com.sparta.delivery.infrastructure.message.producer.KafkaProducer;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -29,14 +33,24 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final HubClient hubClient;
     private final DeliveryRouteClient deliveryRouteClient;
     private final UserClient userClient;
+    private final KafkaProducer kafkaProducer;
 
     @Override
     @Transactional(readOnly = true)
-    public DeliveryDetailResponseDto getDeliveryById(UUID deliveryId) {
+    public DeliveryDetailResponseDto getDeliveryById(UUID deliveryId, HttpServletRequest servletRequest) {
 
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
+        
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+
+        if(userRole.equals("HUB_ADMIN")){
+            checkHubAdmin(userId, delivery);
+        } else if (userRole.equals("DELIVERY_PERSON")) {
+            checkDeliveryPerson(userId, delivery);
+        }
 
         HubResponseDto originHub = hubClient.findHubById(delivery.getStartHubId());
         HubResponseDto destinationHub = hubClient.findHubById(delivery.getEndHubId());
@@ -48,10 +62,20 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional
-    public UUID updateDelivery(UUID deliveryId, DeliveryStatus status) {
+    public UUID updateDelivery(UUID deliveryId, DeliveryStatus status, HttpServletRequest servletRequest) {
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
+
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+
+        if(userRole.equals("HUB_ADMIN")){
+            checkHubAdmin(userId, delivery);
+        } else if (userRole.equals("DELIVERY_PERSON")) {
+            checkDeliveryPerson(userId, delivery);
+        }
+
 
         delivery.updateDelivery(status);
 
@@ -60,21 +84,27 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional
-    public UUID deleteDelivery(UUID deliveryId) {
+    public UUID deleteDelivery(UUID deliveryId, HttpServletRequest servletRequest) {
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
 
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+
+        if(servletRequest.getHeader("X-Authenticated-User-Role").equals("HUB_ADMIN")){
+            checkHubAdmin(userId, delivery);
+        }
+
         delivery.deleteDelivery(delivery.getCreatedBy());
 
-        deliveryRouteClient.deleteByDeliveryId(deliveryId);
+        kafkaProducer.delete(new DeleteEvent(deliveryId, userId));
 
         return deliveryId;
     }
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponseDto<DeliveryListResponseDto> getDeliveries(DeliverySearchRequestDto requestDto) {
+    public PageResponseDto<DeliveryListResponseDto> getDeliveries(DeliverySearchRequestDto requestDto, HttpServletRequest servletRequest) {
         Page<Delivery> deliveries = findDeliveries(requestDto);
 
         List<UUID> originHubIds = deliveries.map(Delivery::getStartHubId).stream().distinct().toList();
@@ -106,6 +136,17 @@ public class DeliveryServiceImpl implements DeliveryService {
         return delivery.getId();
     }
 
+    @Transactional
+    @Override
+    public UUID complateDelivery(UUID deliveryId, DeliveryComplateRequestDto requestDto, HttpServletRequest servletRequest) {
+        Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
+                () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
+        );
+
+        delivery.complateDelivery(requestDto);
+
+        return deliveryId;
+    }
 
 
     private Page<Delivery> findDeliveries(DeliverySearchRequestDto requestDto) {
@@ -118,5 +159,24 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
         return deliveryRepository.searchDeliveries(requestDto);
     }
+
+    private void checkHubAdmin(UUID userId, Delivery delivery){
+        UUID targetHubId = hubClient.findHubByUserId(userId);
+
+        if(!targetHubId.equals(delivery.getStartHubId()) && !targetHubId.equals(delivery.getEndHubId())){
+            throw new DeliveryException(Error.FORBIDDEN);
+        }
+
+    }
+
+    private void checkDeliveryPerson(UUID userId, Delivery delivery){
+        if(!userId.equals(delivery.getDeliveryPersonId())){
+            throw new DeliveryException(Error.FORBIDDEN);
+        }
+    }
+    
+
+
+
 
 }
