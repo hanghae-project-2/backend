@@ -111,4 +111,10 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
+
+    public boolean isUserActive(UUID userId) {
+        return userRepository.findById(userId)
+                .filter(user -> !user.getIsDelete()) // 삭제 여부 확인
+                .isPresent();
+    }
 }
