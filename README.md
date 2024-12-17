@@ -60,12 +60,12 @@
 
 ### **order 서비스**
 
-사용자가 주문을 생성하고 관리할 수 있도록 하는 주문 생성, 수정, 조회 기능을 개발
+사용자가 주문을 생성하고 관리할 수 있도록 하는 주문 생성, 수정, 조회 기능을 개발</br>
 주문 생성 이벤트를 Kafka를 통해 다른 서비스와 비동기로 통신하도록 구현
 
 ### **delivery 서비스**
 
-주문 데이터를 기반으로 배송 정보를 처리하는 배송 생성, 수정, 삭제, 조회 기능을 구현
+주문 데이터를 기반으로 배송 정보를 처리하는 배송 생성, 수정, 삭제, 조회 기능을 구현</br>
 Kafka Consumer를 통해 order 서비스에서 발생한 이벤트를 실시간으로 수신하고 배송 상태를 업데이트하는 로직을 추가, 배송 생성 이벤트를 Kafka를 통해 다른 서비스와 비동기로 통신하도록 구현
 
 
@@ -99,11 +99,30 @@ public class KafkaConsumerConfig {
 ```
 
 
-### **2. 데이터 누적 문제**
-- **문제**: 오래된 데이터로 인해 조회 성능 저하.  
+### **2. Swagger와 ControllerAdvice 어노테이션 충돌 현상 (성호)**
+- **문제**: controllerAdvice랑 swagger가 충돌하여 swagger가 제대로 작동하지 않았습니다.
 - **해결**: 
-  1. **MariaDB 인덱스 설정**  
-  2. **MongoDB로 데이터 이관**  
+1. Swagger가 Controller 관련 Bean을 스캔할 때, @ControllerAdvice가 붙은 클래스도 컨트롤러의 일부로 오해하고 스캔하는 현상이 있었습니다.
+2. @ExceptionHandler가 정의된 메서드까지 API 문서에 포함되게 되면서 불필요한 문서가 Swagger에 나타나는 겹치는 이유였습니다.
+3. GlobalHandlerException에 @Hidden 어노테이션을 달아서 swagger가 스캔하지 않도록 명시할 수 있었습니다.
+
+```java
+@RestControllerAdvice
+@Hidden
+public class GlobalExceptionHandler {
+
+
+    @ExceptionHandler(ProductNullPointerException.class)
+    public CustomApiResponse<ErrorResponse> handleNullPointerException(ProductNullPointerException ex) {
+        return buildErrorResponse(Error.NOT_FOUND_PRODUCT);
+    }
+
+
+    private CustomApiResponse<ErrorResponse> buildErrorResponse(Error error) {
+        return new CustomApiResponse<>(error.getCode(), error.getMessage());
+    }
+}
+```
 
 ---
 
@@ -124,6 +143,11 @@ public class KafkaConsumerConfig {
 > 다들 많이 도와주시고 알려주셔서 감사합니다!
 
 ### **성호**  
+
+> 저도 마찬가지로, MSA에 미숙하여 설정 파일을 구축하는 것에 어려움을 느꼈습니다.</br>
+> 처음에 도커라던지, 파일들의 컨벤션을 정하는 것의 중요성을 몸소 실감하였습니다</br>
+> 팀원들이 열심히 잘 해주셔서 감사했고, 자극도 많이 받아가는 시간이었습니다!
+
 ### **준석**
 ### **희진**
 
