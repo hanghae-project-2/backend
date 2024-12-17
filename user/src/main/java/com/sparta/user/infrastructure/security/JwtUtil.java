@@ -48,6 +48,7 @@ public class JwtUtil {
                 .claim("tokenType", "access")
                 .claim("username", user.getUsername())
                 .claim("role", user.getRole())
+                .claim("userId", user.getId())
                 .setIssuer(issuer)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessExpiration))

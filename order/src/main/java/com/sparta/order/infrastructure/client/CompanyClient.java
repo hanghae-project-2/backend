@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.UUID;
 
-@FeignClient(name = "company-service")
+@FeignClient(name = "company-server")
 public interface CompanyClient {
 
 	@GetMapping("/companies/search-by-name")
