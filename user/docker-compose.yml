@@ -3,7 +3,7 @@ services:
     image: mysql:8.0.34
     container_name: mysql-user
     ports:
-      - "3306:3306"
+      - "3315:3306"
     env_file:
       - .env
     environment:
