@@ -69,11 +69,13 @@
 Kafka Consumer를 통해 order 서비스에서 발생한 이벤트를 실시간으로 수신하고 배송 상태를 업데이트하는 로직을 추가, 배송 생성 이벤트를 Kafka를 통해 다른 서비스와 비동기로 통신하도록 구현
 
 
-### **2. 배송 상태 업데이트**
+### **product 서비스**
 
-배송 상태를 `요청됨` → `배송 중` → `배송 완료` 순으로 업데이트
+Kafka Consumer를 통해 order 서비스에서 발행된 이벤트를 수신하고 재고를 감소시킴.
 
-Redis를 통한 동시성 제어 및 Resilience4j로 Fallback 처리
+### **slack 서비스**
+
+Kafak Consumer를 통해 delivery 서비스를 수신하고 hub, company, order, user 등에 feignclient를 통해 메세지를 generate하여 slack으로 발행
 
 
 
@@ -81,7 +83,7 @@ Redis를 통한 동시성 제어 및 Resilience4j로 Fallback 처리
 
 ## 🛠️ **트러블 슈팅**
 
-### **1. 카프카 설정 문제**
+### **1. 카프카 설정 문제 (혜정)**
 - **문제**: Kafka Consumer를 설정하던 중 JsonDeserializer가 역직렬화할 대상 클래스를 찾지 못하면서 ClassNotFoundException이 발생했습니다.
 - **해결**: Kafka 설정 파일인 KafkaConsumerConfig.java에 기타 다른 설정들을 아예 지운뒤 해당 코드만 남기고 yml 을 통해 최소 설정만 했더니 오히려 발생했던 에러가 사라졌습니다.
 
@@ -107,9 +109,8 @@ public class KafkaConsumerConfig {
 
 
 ## 🧩 **개선점**
-- 메시지 큐(Kafka, RabbitMQ)를 사용해 이벤트 기반 시스템으로 개선.
-- ElasticSearch를 활용하여 배송 이력 조회 성능 최적화.
-- JPA Custom Repository 패턴 적용으로 코드 유연성 향상.
+- slack 같은 경우 여러 도메인으로 feignClient를 보내야 할 상황이 있었는데, competableFuture 객체를 활용하여 비동기적으로 수행하면 효율이 더 좋을 것 같습니다.
+- ElasticSearch를 통한 Shard와 Replica로 데이터를 분산 처리하며 배송 이력 조회 성능을 최적화할 수 있을 것으로 보입니다.
 
 ---
 
@@ -121,4 +122,8 @@ public class KafkaConsumerConfig {
 > 짧은 시간동안 너무나 부족한 점을 많이 느끼고 또 공부의 필요성을 느꼈던 2주 였습니다. </br>
 > 그동안 접해보지 못했던 새로운 기술들과 구조를 배울 수 있던 좋은 시간이었던거 같습니다!
 > 다들 많이 도와주시고 알려주셔서 감사합니다!
+
+### **성호**  
+### **준석**
+### **희진**
 
