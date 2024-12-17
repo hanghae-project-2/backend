@@ -6,6 +6,7 @@ create table company
     name       varchar(255)                  not null,
     address    varchar(255)                  not null,
     type       enum ('PRODUCER', 'RECEIVER') not null,
+    manager    varchar(255)                  not null,
     is_delete  bit                           not null,
     is_public  bit                           not null,
     created_at datetime(6)                   null,
