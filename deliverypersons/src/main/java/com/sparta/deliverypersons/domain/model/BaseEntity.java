@@ -24,12 +24,12 @@ public abstract class BaseEntity {
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @Comment("생성일")
-    private LocalDateTime createdAt;
+    protected LocalDateTime createdAt;
 
     @CreatedBy
     @Column(nullable = false, updatable = false)
     @Comment("생성자")
-    private UUID createdBy;
+    protected UUID createdBy;
 
     @LastModifiedDate
     @Column

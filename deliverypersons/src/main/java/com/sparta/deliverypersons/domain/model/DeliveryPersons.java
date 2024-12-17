@@ -30,12 +30,23 @@ public class DeliveryPersons extends BaseEntity {
     @Column(name = "delivery_sequence")
     private int deliverySequence;
 
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public static DeliveryPersons create(UUID userId, UUID hubId, DeliveryType type, int sequence) {
         DeliveryPersons deliveryPerson = new DeliveryPersons();
         deliveryPerson.userId = userId;
         deliveryPerson.hubId = type == DeliveryType.HUB_DELIVERY ? null : hubId;
         deliveryPerson.type = type;
         deliveryPerson.deliverySequence = sequence;
+        deliveryPerson.createdBy = userId;
         return deliveryPerson;
     }
 
