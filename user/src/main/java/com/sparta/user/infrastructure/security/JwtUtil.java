@@ -46,6 +46,7 @@ public class JwtUtil {
         String token = Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("tokenType", "access")
+                .claim("userId", user.getId())
                 .claim("username", user.getUsername())
                 .claim("role", user.getRole())
                 .setIssuer(issuer)
@@ -55,8 +56,8 @@ public class JwtUtil {
                 .compact();
 
         // Redis에 AccessToken 저장
-        String redisKey = "token:" + user.getUsername() + ":access";
-        redisTemplate.opsForValue().set(redisKey, token, Duration.ofMillis(accessExpiration));
+//        String redisKey = "token:" + user.getUsername() + ":access";
+//        redisTemplate.opsForValue().set(redisKey, token, Duration.ofMillis(accessExpiration));
 
         return AuthResponse.of(BEARER_PREFIX + token);
     }
@@ -71,8 +72,8 @@ public class JwtUtil {
                 .compact();
 
         // Redis에 RefreshToken 저장
-        String redisKey = "token:" + username + ":refresh";
-        redisTemplate.opsForValue().set(redisKey, token, Duration.ofMillis(REFRESH_TOKEN_TIME));
+//        String redisKey = "token:" + username + ":refresh";
+//        redisTemplate.opsForValue().set(redisKey, token, Duration.ofMillis(REFRESH_TOKEN_TIME));
 
         return BEARER_PREFIX + token;
     }

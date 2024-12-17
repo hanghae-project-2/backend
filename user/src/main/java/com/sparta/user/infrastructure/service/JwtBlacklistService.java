@@ -1,4 +1,4 @@
-package com.sparta.user.application.service;
+package com.sparta.user.infrastructure.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -10,18 +10,19 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class JwtBlacklistService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisService redisService;
+
     private static final String ACCESS_TOKEN_PREFIX = "blacklist:accessToken:";
     private static final String REFRESH_TOKEN_PREFIX = "blacklist:refreshToken:";
 
     public void addToBlacklist(String token, long expirationInMillis, boolean isAccessToken) {
         String key = getKey(token, isAccessToken);
-        redisTemplate.opsForValue().set(key, "blacklisted", Duration.ofMillis(expirationInMillis));
+        redisService.set(key, "blacklisted", Duration.ofMillis(expirationInMillis));
     }
 
     public boolean isBlacklisted(String token, boolean isAccessToken) {
         String key = getKey(token, isAccessToken);
-        return redisTemplate.hasKey(key);
+        return redisService.hasKey(key);
     }
 
     private String getKey(String token, boolean isAccessToken) {

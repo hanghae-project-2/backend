@@ -5,6 +5,7 @@ import com.sparta.user.presentation.dto.response.AuthResponse;
 import com.sparta.user.presentation.dto.request.SignInRequest;
 import com.sparta.user.presentation.dto.request.SignUpRequest;
 import com.sparta.user.presentation.response.Response;
+import com.sparta.user.presentation.response.ResponseMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class AuthController {
         return new Response<>(
                 HttpStatus.OK.value(),
                 HttpStatus.OK.getReasonPhrase(),
-                "로그아웃 성공."
+                ResponseMessage.LOGOUT_SUCCESS.getMessage()
         );
     }
 
@@ -53,7 +54,7 @@ public class AuthController {
         return new Response<>(
                 HttpStatus.CREATED.value(),
                 HttpStatus.CREATED.getReasonPhrase(),
-                "회원가입 성공."
+                ResponseMessage.SIGN_UP_SUCCESS.getMessage()
         );
     }
 
@@ -70,7 +71,3 @@ public class AuthController {
         );
     }
 }
-
-
-
-
