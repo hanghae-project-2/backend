@@ -46,4 +46,19 @@ abstract class BaseEntity {
 
     var deletedBy: UUID? = null
         protected set
+
+    fun createdBy(createdBy: UUID) {
+        this.createdBy = createdBy
+    }
+
+    fun updatedBy(updatedBy: UUID) {
+        this.updatedBy = updatedBy
+    }
+
+    fun deletedBy(deletedBy: UUID) {
+        this.isDelete = true
+        this.isPublic = false
+        this.deletedBy = deletedBy
+        this.deletedAt = LocalDateTime.now()
+    }
 }

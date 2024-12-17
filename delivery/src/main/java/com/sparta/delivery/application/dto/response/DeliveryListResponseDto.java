@@ -22,4 +22,19 @@ public record DeliveryListResponseDto(
         LocalDateTime updatedAt
 ) {
 
+    public static DeliveryListResponseDto from(Delivery delivery, HubResponseDto originHub, HubResponseDto destinationHub) {
+        return DeliveryListResponseDto.builder()
+                .deliveryId(delivery.getId())
+                .orderId(delivery.getOrderId())
+                .deliveryStatus(delivery.getCurrentStatus().toString())
+                .originHubId(originHub.hubId())
+                .originHubName(originHub.hubName())
+                .destinationHubId(destinationHub.hubId())
+                .destinationHubName(destinationHub.hubName())
+                .recipientName(delivery.getRecipientName())
+                .deliveryAddress(delivery.getDeliveryAddress())
+                .createdAt(delivery.getCreatedAt())
+                .updatedAt(delivery.getUpdatedAt())
+                .build();
+    }
 }

@@ -1,14 +1,14 @@
 package com.sparta.product.presentation.api.controller;
 
-import com.sparta.product.application.dto.ProductCreate;
-import com.sparta.product.application.dto.ProductDelete;
-import com.sparta.product.application.dto.ProductRead;
-import com.sparta.product.application.dto.ProductUpdate;
+import com.querydsl.core.types.Predicate;
+import com.sparta.product.application.dto.*;
 import com.sparta.product.domain.model.Product;
 import com.sparta.product.application.service.ProductServiceImpl;
 import com.sparta.product.domain.service.ProductService;
+import com.sparta.product.presentation.api.controller.docs.ProductControllerDocs;
 import com.sparta.product.presentation.api.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
@@ -17,13 +17,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
-import java.util.function.Predicate;
 
 
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
-public class ProductController {
+public class ProductController extends ProductControllerDocs {
 
     private final ProductService productService;
 
@@ -34,11 +33,12 @@ public class ProductController {
     }
 
     @GetMapping
-    public ApiResponse<?> getAllProducts(
+    public ApiResponse<Page<Product>> getPagedProducts(
             @QuerydslPredicate(root = Product.class) Predicate predicate,
             @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable
             ) {
-        return null;
+        Page<Product> productPageResponse = productService.getProducts(predicate, pageable);
+        return new ApiResponse<>(HttpStatus.OK.value(),HttpStatus.OK.getReasonPhrase(),productPageResponse);
     }
 
     @GetMapping("/{productId}")

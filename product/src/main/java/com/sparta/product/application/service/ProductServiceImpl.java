@@ -1,14 +1,18 @@
 package com.sparta.product.application.service;
 
+import com.querydsl.core.types.Predicate;
 import com.sparta.product.application.dto.ProductCreate;
 import com.sparta.product.application.dto.ProductDelete;
 import com.sparta.product.application.dto.ProductRead;
 import com.sparta.product.application.dto.ProductUpdate;
+import com.sparta.product.application.event.ProductEvent;
 import com.sparta.product.domain.exception.ProductNullPointerException;
 import com.sparta.product.domain.model.Product;
 import com.sparta.product.domain.repository.ProductRepository;
 import com.sparta.product.domain.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +25,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     @Override
+    @Transactional
     public ProductCreate.Response createProduct(ProductCreate.Request productCreate) {
 
         Product product = Product.createProduct(
@@ -34,14 +39,16 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    @Override
     @Transactional
     public ProductDelete.Response deleteProduct(UUID productId) {
         Product product = productRepository.findById(productId).orElseThrow(ProductNullPointerException::new);
-        // 유저가 없어서 우선 랜덤으로 기입하였습니다.
+        //TODO 유저 받으면 유저 ID 기입하기
         product.deleteProduct(UUID.randomUUID());
         return ProductDelete.Response.of(product);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public ProductRead.Response getProduct(UUID productId) {
         return ProductRead.Response.of(productRepository
@@ -55,6 +62,21 @@ public class ProductServiceImpl implements ProductService {
         Product product = Product.updateProduct(productId, productUpdate.name(), productUpdate.companyId(), productUpdate.amount());
         productRepository.save(product);
         return ProductUpdate.Response.of(product);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Product> getProducts(Predicate predicate, Pageable pageable) {
+        return productRepository.getPagedResults(predicate, pageable);
+    }
+
+    @Override
+    @Transactional
+    public void subtractAmount(ProductEvent productEvent) {
+        Product product = productRepository.findById(productEvent.productId()).orElseThrow(ProductNullPointerException::new);
+        Product updatedProduct = Product.updateProduct(product.getId(), product.getName(), product.getCompanyId(), product.getAmount() - productEvent.quantity());
+        productRepository.save(updatedProduct);
+
     }
 
 

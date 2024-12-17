@@ -7,6 +7,8 @@ import com.sparta.hub.application.dto.RouteState
 import com.sparta.hub.application.dto.request.HubRequestDto
 import com.sparta.hub.application.dto.request.HubSearchRequestDto
 import com.sparta.hub.application.dto.response.HubDetailResponseDto
+import com.sparta.hub.application.dto.response.HubResponseDto
+import com.sparta.hub.application.dto.response.HubRouteDetailResponseDto
 import com.sparta.hub.application.dto.response.HubSummaryResponseDto
 import com.sparta.hub.application.dto.response.toResponseDto
 import com.sparta.hub.application.dto.toRouteInfo
@@ -17,10 +19,10 @@ import com.sparta.hub.domain.model.HubRoute
 import com.sparta.hub.domain.repository.HubRepository
 import com.sparta.hub.domain.repository.HubRouteRepository
 import com.sparta.hub.infrastructure.redis.RedisService
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
@@ -41,6 +43,8 @@ class HubService(
     @Value("\${kakao.api.key}")
     private lateinit var kakaoApiKey: String
 
+    private val prefix: String = "hut-route"
+
     val connections = mapOf(
         "경기 남부 센터" to listOf("경기 북부 센터", "서울특별시 센터", "인천광역시 센터", "강원특별자치도 센터", "경상북도 센터", "대전광역시 센터", "대구광역시 센터"),
         "대전광역시 센터" to listOf(
@@ -56,23 +60,25 @@ class HubService(
     )
 
     @Transactional
-    fun registerHub(hubAddress: String, hubName: String): UUID {
+    fun registerHub(servletRequest: HttpServletRequest, hubAddress: String, hubName: String): UUID {
 
         val result = findLatitudeAndLongitude(hubAddress)
 
-        return hubRepository.save(
-            Hub(
-                name = hubName,
-                address = hubAddress,
-                latitude = result?.get("latitude"),
-                longitude = result?.get("longitude"),
-            )
-        ).id!!
+        val hub = Hub(
+            name = hubName,
+            address = hubAddress,
+            latitude = result?.get("latitude") ?: throw UnableCalculateRouteException(),
+            longitude = result["longitude"] ?: throw UnableCalculateRouteException(),
+            createdBy = servletRequest.getHeader("X-Authenticated-User-Id")
+        )
+
+        return hubRepository.save(hub).id!!
     }
 
     @Transactional
-    @Scheduled(cron = "0 0 0 * * *")
-    fun navigateHubRoutes() {
+//    TODO: 마스터 사용자 Id를 가지고 있어야 자동실행 가능
+//    @Scheduled(cron = "0 0 0 * * *")
+    fun navigateHubRoutes(servletRequest: HttpServletRequest) {
 
         val hubRoutes = hubRouteRepository.findAll()
         val hubs = hubRoutes.mapNotNull { it.startHub }.distinct()
@@ -85,21 +91,32 @@ class HubService(
                 val startHub = hubMap[startHubName] ?: throw NotFoundHubException()
                 val endHub = hubMap[endHubName] ?: throw NotFoundHubException()
 
-                val forwardResult = calculateForHubRoute(startHub, endHub)
-                val reverseResult = calculateForHubRoute(endHub, startHub)
+                val forwardResult = calculateForHubRoute(startHub, endHub)!!
+                val reverseResult = calculateForHubRoute(endHub, startHub)!!
 
                 val forwardHubRoute = hubRouteMap["${startHub.id}-${endHub.id}"].apply {
-                    this?.estimatedMeter = forwardResult?.estimatedMeter
-                    this?.estimatedSecond = forwardResult?.estimatedSecond
+                    this?.updateEstimatedInfo(
+                        forwardResult.estimatedSecond,
+                        forwardResult.estimatedMeter,
+                        servletRequest.getHeader("X-Authenticated-User-Id")
+                    )
                 }
 
                 val reverseHubRoute = hubRouteMap["${endHub.id}-${startHub.id}"].apply {
-                    this?.estimatedMeter = reverseResult?.estimatedMeter
-                    this?.estimatedSecond = reverseResult?.estimatedSecond
+                    this?.updateEstimatedInfo(
+                        reverseResult.estimatedSecond,
+                        reverseResult.estimatedMeter,
+                        servletRequest.getHeader("X-Authenticated-User-Id")
+                    )
                 }
 
                 hubRouteMap.values.forEach { value ->
-                    value.id?.let { redisService.setHubRoute("${value.startHub?.name}${value.endHub?.name}", it) }
+                    value.id?.let {
+                        redisService.setHubRoute(
+                            "${prefix}::${value.startHub?.name} -> ${value.endHub?.name}",
+                            it
+                        )
+                    }
                 }
                 listOfNotNull(forwardHubRoute, reverseHubRoute)
             }
@@ -113,8 +130,8 @@ class HubService(
     @Transactional(readOnly = true)
     fun getOptimalHubRoutes(startHubId: UUID, endHubId: UUID): RouteResult {
 
-        val startHub = hubRepository.findById(startHubId).orElseThrow { NotFoundHubException() }
-        val endHub = hubRepository.findById(endHubId).orElseThrow { NotFoundHubException() }
+        val startHub = hubRepository.findByIdOrNull(startHubId) ?: throw NotFoundHubException()
+        val endHub = hubRepository.findByIdOrNull(endHubId) ?: throw NotFoundHubException()
 
         redisService.getHubRouteResult(startHub.name, endHub.name)?.let {
             return it
@@ -148,7 +165,7 @@ class HubService(
 
     @Transactional(readOnly = true)
     fun getHubDetail(hubId: UUID): HubDetailResponseDto {
-        val hub = hubRepository.findById(hubId).orElseThrow { NotFoundHubException() }
+        val hub = hubRepository.findByIdOrNull(hubId) ?: throw NotFoundHubException()
 
         val routeResultList = redisService.getHubRouteByStartingWithKey(hub.name)
 
@@ -156,8 +173,8 @@ class HubService(
     }
 
     @Transactional
-    fun modifyHub(hubId: UUID, hubRequestDto: HubRequestDto): UUID {
-        val hub = hubRepository.findById(hubId).orElseThrow { NotFoundHubException() }
+    fun modifyHub(servletRequest: HttpServletRequest, hubId: UUID, hubRequestDto: HubRequestDto): UUID {
+        val hub = hubRepository.findByIdOrNull(hubId) ?: throw NotFoundHubException()
 
         val latitudeAndLongitude = findLatitudeAndLongitude(hubRequestDto.address)
 
@@ -165,10 +182,16 @@ class HubService(
         val longitude = latitudeAndLongitude?.get("longitude")
 
         if (hubRequestDto.isDelete) {
-            hub.markAsDelete()
+            hub.markAsDelete(servletRequest.getHeader("X-Authenticated-User-Id"))
         }
-        hub.updatePosition(latitude, longitude)
-        hub.updateName(hubRequestDto.name)
+
+        hub.updateInfo(
+            latitude,
+            longitude,
+            hubRequestDto.name,
+            hubRequestDto.manager,
+            servletRequest.getHeader("X-Authenticated-User-Id")
+        )
 
         return hubRepository.save(hub).id!!
     }
@@ -178,9 +201,34 @@ class HubService(
         return hubRepository.existsById(hubId)
     }
 
-    @Transactional
-    @Scheduled(cron = "0 0 0 * * *")
-    fun updateForOptimalHubRoutes(hubRoutes: List<HubRoute>) {
+    @Transactional(readOnly = true)
+    fun existHubAndCheckManager(hubId: UUID, userId: UUID): Boolean {
+        val hub = hubRepository.findByIdOrNull(hubId) ?: throw NotFoundHubException()
+
+        return hub.checkManager(userId)
+    }
+
+    @Transactional(readOnly = true)
+    fun findHubByName(hubName: String): HubResponseDto {
+        return hubRepository.findByNameIs(hubName).orElseThrow { NotFoundHubException() }.toResponseDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun findHubById(hubId: UUID): HubResponseDto {
+        return hubRepository.findByIdOrNull(hubId)?.toResponseDto() ?: throw NotFoundHubException()
+    }
+
+    @Transactional(readOnly = true)
+    fun findHubsByIds(ids: List<UUID>): List<HubResponseDto> {
+        return hubRepository.findByIds(ids).map { it.toResponseDto() }
+    }
+
+    @Transactional(readOnly = true)
+    fun findHubRoutesByHubRouteId(hubRouteIdList: List<UUID>): List<HubRouteDetailResponseDto> {
+        return hubRouteRepository.findByIds(hubRouteIdList)
+    }
+
+    private fun updateForOptimalHubRoutes(hubRoutes: List<HubRoute>) {
 
         val createRouteInfoGraph = hubRoutes.groupBy({ it.startHub!!.name }) { it.toRouteInfo() }
 
@@ -304,8 +352,8 @@ class HubService(
                 val summary = firstRoute["summary"]
 
                 HubRoute(
-                    estimatedSecond = summary["duration"]?.asDouble(),
-                    estimatedMeter = summary["distance"]?.asDouble(),
+                    estimatedSecond = summary["duration"].asInt(),
+                    estimatedMeter = summary["distance"].asInt(),
                     startHub = startHub,
                     endHub = endHub
                 )

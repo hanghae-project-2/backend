@@ -7,3 +7,5 @@ class NotFoundCompanyException : CompanyException(Error.NOT_FOUND_COMPANY)
 class IncorrectCompanyTypeException : CompanyException(Error.INCORRECT_COMPANY_TYPE)
 
 class IncorrectHubIdException : CompanyException(Error.INCORRECT_HUB_ID)
+
+class AccessDeniedException : CompanyException(Error.ACCESS_DENIED)

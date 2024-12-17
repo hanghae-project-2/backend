@@ -4,5 +4,7 @@ import java.util.UUID;
 
 public record CompanyResponseDto(
         UUID companyId,
-        String companyName) {
+        String companyName,
+        String address,
+        UUID hubId) {
 }

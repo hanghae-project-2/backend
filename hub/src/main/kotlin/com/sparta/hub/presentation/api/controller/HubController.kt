@@ -2,6 +2,7 @@ package com.sparta.hub.presentation.api.controller
 
 import com.sparta.hub.application.dto.RouteResult
 import com.sparta.hub.application.service.HubService
+import com.sparta.hub.libs.RoleValidation
 import com.sparta.hub.presentation.api.controller.docs.HubControllerDocs
 import com.sparta.hub.presentation.api.request.HubRequest
 import com.sparta.hub.presentation.api.request.HubSearchRequest
@@ -10,6 +11,7 @@ import com.sparta.hub.presentation.api.response.HubDetailResponse
 import com.sparta.hub.presentation.api.response.HubSummaryResponse
 import com.sparta.hub.presentation.api.response.Response
 import com.sparta.hub.presentation.api.response.toResponse
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -30,36 +32,31 @@ class HubController(
 ) : HubControllerDocs() {
 
     @PostMapping
+    @RoleValidation("MASTER")
     override fun registerHub(
         @RequestParam address: String,
-        @RequestParam hubName: String
+        @RequestParam hubName: String,
+        servletRequest: HttpServletRequest
     ): Response<UUID> =
         Response(
             HttpStatus.CREATED.value(),
             HttpStatus.CREATED.reasonPhrase,
-            hubService.registerHub(address, hubName)
+            hubService.registerHub(servletRequest, address, hubName)
         )
 
-    @PostMapping("/navigate")
-    override fun navigateHubRoutes(): Response<Unit> =
+    @PatchMapping("/navigate")
+    @RoleValidation("MASTER")
+    override fun navigateHubRoutes(
+        servletRequest: HttpServletRequest
+    ): Response<Unit> =
         Response(
             HttpStatus.OK.value(),
             HttpStatus.OK.reasonPhrase,
-            hubService.navigateHubRoutes()
-        )
-
-    @GetMapping("/routes/id")
-    override fun findHubRoutesById(
-        @RequestParam startHubId: UUID,
-        @RequestParam endHubId: UUID
-    ): Response<RouteResult> =
-        Response(
-            HttpStatus.OK.value(),
-            HttpStatus.OK.reasonPhrase,
-            hubService.getOptimalHubRoutes(startHubId, endHubId)
+            hubService.navigateHubRoutes(servletRequest)
         )
 
     @GetMapping("/routes/name")
+    @RoleValidation("ANY_ROLE")
     override fun findHubRoutesByName(
         @RequestParam startHubName: String,
         @RequestParam endHubName: String
@@ -71,6 +68,7 @@ class HubController(
         )
 
     @GetMapping("/search")
+    @RoleValidation("ANY_ROLE")
     override fun searchHubs(
         pageable: Pageable,
         hubSearchRequest: HubSearchRequest
@@ -82,6 +80,7 @@ class HubController(
         )
 
     @GetMapping("/{hubId}")
+    @RoleValidation("ANY_ROLE")
     override fun getHubDetail(
         @PathVariable hubId: UUID
     ): Response<HubDetailResponse> =
@@ -92,23 +91,15 @@ class HubController(
         )
 
     @PatchMapping("/{hubId}")
+    @RoleValidation("MASTER")
     override fun modifyHub(
         @PathVariable hubId: UUID,
-        @RequestBody request: HubRequest
+        @RequestBody request: HubRequest,
+        servletRequest: HttpServletRequest
     ): Response<UUID> =
         Response(
             HttpStatus.OK.value(),
             HttpStatus.OK.reasonPhrase,
-            hubService.modifyHub(hubId, request.toDto())
-        )
-
-    @GetMapping("/company/{hubId}")
-    fun existHub(
-        @PathVariable hubId: UUID
-    ): Response<Boolean> =
-        Response(
-            HttpStatus.OK.value(),
-            HttpStatus.OK.reasonPhrase,
-            hubService.existHub(hubId)
+            hubService.modifyHub(servletRequest, hubId, request.toDto())
         )
 }

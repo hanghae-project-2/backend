@@ -41,4 +41,11 @@ public abstract class BaseEntity {
 	LocalDateTime deletedAt;
 
 	UUID deletedBy;
+
+	public void markAsDelete(UUID userId) {
+		this.isDelete = true;
+		this.isPublic = false;
+		this.deletedAt = LocalDateTime.now();
+		this.deletedBy = userId;
+	}
 }

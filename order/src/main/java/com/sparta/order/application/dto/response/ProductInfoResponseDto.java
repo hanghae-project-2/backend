@@ -4,7 +4,8 @@ import java.util.UUID;
 
 public record ProductInfoResponseDto(
         UUID productId,
-        String productName,
-        UUID requestCompanyId
+        String name,
+        UUID companyId,
+        Integer amount
 ) {
 }

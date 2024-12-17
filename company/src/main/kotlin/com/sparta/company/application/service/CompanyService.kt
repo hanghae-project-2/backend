@@ -5,13 +5,15 @@ import com.sparta.company.application.dto.request.BaseCompanyRequestDto
 import com.sparta.company.application.dto.request.CompanySearchRequestDto
 import com.sparta.company.application.dto.request.RegisterCompanyRequestDto
 import com.sparta.company.application.dto.request.toEntity
-import com.sparta.company.application.dto.response.BaseCompanyResponseDto
+import com.sparta.company.application.dto.response.CompanyResponseDto
 import com.sparta.company.application.dto.response.CompanySummaryResponseDto
 import com.sparta.company.application.dto.response.toResponseDto
+import com.sparta.company.application.exception.AccessDeniedException
 import com.sparta.company.application.exception.IncorrectHubIdException
 import com.sparta.company.application.exception.NotFoundCompanyException
 import com.sparta.company.application.exception.NotFoundHubException
 import com.sparta.company.domain.repository.CompanyRepository
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -25,32 +27,63 @@ class CompanyService(
 ) {
 
     @Transactional
-    fun registerCompany(request: RegisterCompanyRequestDto): UUID {
+    fun registerCompany(servletRequest: HttpServletRequest, request: RegisterCompanyRequestDto): UUID {
+
+        val createdBy = servletRequest.getHeader("X-Authenticated-User-Id")
+        val role = servletRequest.getHeader("X-Authenticated-User-Role")
 
         val hubId = extractUUID(request.hubId)
 
-        hubService.existHub(hubId).takeIf { it.data == true } ?: throw NotFoundHubException()
+        if (role.equals("MASTER")) {
+            hubService.existHub(hubId).takeIf { it } ?: throw NotFoundHubException()
+        } else {
+            hubService.existHubAndCheckManager(hubId, createdBy).takeIf { it } ?: throw NotFoundHubException()
+        }
 
-        return companyRepository.save(request.toEntity()).id
+        return companyRepository.save(request.toEntity(createdBy)).id
     }
 
     @Transactional
-    fun updateCompany(companyId: UUID, request: BaseCompanyRequestDto): UUID {
+    fun updateCompany(servletRequest: HttpServletRequest, companyId: UUID, request: BaseCompanyRequestDto): UUID {
+
+        val userId = servletRequest.getHeader("X-Authenticated-User-Id")
+        val role = servletRequest.getHeader("X-Authenticated-User-Role")
 
         val company = companyRepository.findByIdOrNull(companyId) ?: throw NotFoundCompanyException()
 
-        company.updateInfo(request.name, request.type, request.address)
+        when (role) {
+            "MASTER" -> {
+                hubService.existHub(company.hubId).takeIf { it } ?: throw NotFoundHubException()
+            }
+
+            "HUB_ADMIN" -> {
+                hubService.existHubAndCheckManager(company.hubId, userId).takeIf { it } ?: throw NotFoundHubException()
+            }
+
+            "COMPANY_ADMIN" -> {
+                company.checkManager(userId).takeIf { it } ?: throw AccessDeniedException()
+                hubService.existHub(company.hubId).takeIf { it } ?: throw NotFoundHubException()
+                request.isDelete.takeIf { it } ?: throw AccessDeniedException()
+            }
+        }
+
+        company.updateInfo(
+            request.name,
+            request.type,
+            request.address,
+            request.manager,
+            userId,
+        )
 
         if (request.isDelete) {
-            company.markAsDelete()
+            company.markAsDelete(userId)
         }
 
         return companyRepository.save(company).id
     }
 
-    //TODO: 업체 조회 시 추가데이터 필요할지?
     @Transactional(readOnly = true)
-    fun getCompany(companyId: UUID): BaseCompanyResponseDto {
+    fun getCompany(companyId: UUID): CompanyResponseDto {
         return companyRepository.findByIdOrNull(companyId)?.toResponseDto() ?: throw NotFoundCompanyException()
     }
 
@@ -61,12 +94,32 @@ class CompanyService(
             throw IncorrectHubIdException()
         }
 
-    //TODO: 마찬가지로 추가 데이터가 필요한지?
     @Transactional(readOnly = true)
     fun searchCompany(
         pageable: Pageable,
         requestDto: CompanySearchRequestDto
     ): Page<CompanySummaryResponseDto> {
         return companyRepository.findPageBy(pageable, requestDto)
+    }
+
+    @Transactional(readOnly = true)
+    fun findCompanyByName(
+        name: String
+    ): CompanyResponseDto {
+        return companyRepository.findByNameIs(name).orElseThrow { NotFoundCompanyException() }.toResponseDto()
+    }
+
+    @Transactional(readOnly = true)
+    fun findCompanyById(
+        id: UUID
+    ): CompanyResponseDto {
+        return companyRepository.findByIdOrNull(id)?.toResponseDto() ?: throw NotFoundCompanyException()
+    }
+
+    @Transactional(readOnly = true)
+    fun findCompaniesByIds(
+        ids: List<UUID>
+    ): List<CompanyResponseDto> {
+        return companyRepository.findByIds(ids).map { it.toResponseDto() }
     }
 }

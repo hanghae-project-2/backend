@@ -1,18 +1,23 @@
 package com.sparta.order.application.service;
 
+import com.sparta.order.application.event.CreateOrderEvent;
 import com.sparta.order.application.dto.request.OrderCreateRequestDto;
 import com.sparta.order.application.dto.request.OrderSearchRequestDto;
 import com.sparta.order.application.dto.request.OrderUpdateRequestDto;
 import com.sparta.order.application.dto.response.*;
-import com.sparta.order.domain.client.CompanyClient;
-import com.sparta.order.domain.client.DeliveryClient;
-import com.sparta.order.domain.client.ProductClient;
+import com.sparta.order.application.event.DeleteEvent;
+import com.sparta.order.infrastructure.client.CompanyClient;
+import com.sparta.order.infrastructure.client.DeliveryClient;
+import com.sparta.order.infrastructure.client.HubClient;
+import com.sparta.order.infrastructure.client.ProductClient;
 import com.sparta.order.domain.exception.Error;
 import com.sparta.order.domain.exception.OrderException;
 import com.sparta.order.domain.model.Order;
 import com.sparta.order.domain.model.OrderStatus;
 import com.sparta.order.domain.repository.OrderRepository;
 import com.sparta.order.domain.service.OrderService;
+import com.sparta.order.infrastructure.message.producer.KafkaProducer;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -31,18 +36,23 @@ public class OrderServiceImpl implements OrderService {
     private final CompanyClient companyClient;
     private final ProductClient productClient;
     private final DeliveryClient deliveryClient;
+    private final KafkaProducer kafkaProducer;
+    private final HubClient hubClient;
 
-    //임시 변수 생성
-    UUID deliveryId = UUID.randomUUID();
 
     @Override
-    public OrderResponseDto createOrder(OrderCreateRequestDto request) {
+    public OrderResponseDto createOrder(OrderCreateRequestDto request, HttpServletRequest servletRequest) {
 
-        ProductResponseDto product = productClient.checkAmount(request.productId(), request.quantity());
+
+        ProductInfoResponseDto product = productClient.findProductById(request.productId());
+
+        if (product.amount() < request.quantity()){
+            throw new OrderException(Error.OUT_OF_STOCK);
+        }
 
         Order order = orderRepository.save(
             Order.builder()
-                    .productId(product.productId())
+                    .productId(request.productId())
                     .status(OrderStatus.RECEIVED)
                     .totalPrice(request.price()* request.quantity())
                     .specialRequests(request.specialRequests())
@@ -52,9 +62,13 @@ public class OrderServiceImpl implements OrderService {
                     .build()
         );
 
-        //TODO : 배송담당자 조회 (Feign Client)
+        CompanyResponseDto recipientCompany = companyClient.findCompanyById(order.getRecipientCompanyId());
+        CompanyResponseDto requestCompany = companyClient.findCompanyById(product.companyId());
 
-        //TODO : create order 이벤트 발생?
+        CreateOrderEvent eventDto = CreateOrderEvent.from(order, product, recipientCompany, requestCompany);
+        kafkaProducer.send(eventDto);
+
+        UUID deliveryId = deliveryClient.getDeliveryByOrderId(order.getId());
 
         return OrderResponseDto.builder()
                 .deliveryId(deliveryId)
@@ -64,33 +78,43 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponseDto deleteOrder(UUID orderId) {
+    public UUID deleteOrder(UUID orderId, HttpServletRequest servletRequest) {
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
 
-        //TODO : userID 로 바꾸기
-        order.deleteOrder(orderId);
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
 
-        UUID deliveryId = deliveryClient.deleteDeliveryByOrderId(orderId);
+        if (servletRequest.getHeader("X-Authenticated-User-Role").equals("HUB_ADMIN")){
+            checkHubAdmin(userId, order.getProductId(), order.getRecipientCompanyId());
+        }
 
+        order.deleteOrder(userId);
 
-        return OrderResponseDto.builder()
-                .orderId(order.getId())
-                .deliveryId(deliveryId)
-                .build();
+        kafkaProducer.delete(new DeleteEvent(orderId,userId));
+
+        return orderId;
     }
 
     @Transactional(readOnly = true)
     @Override
-    public OrderDetailResponseDto getOrderById(UUID orderId) {
+    public OrderDetailResponseDto getOrderById(UUID orderId, HttpServletRequest servletRequest) {
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
 
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+
+        if (userRole.equals("HUB_ADMIN")){
+            checkHubAdmin(userId, order.getProductId(), order.getRecipientCompanyId());
+        } else if ((userRole.equals("COMPANY_ADMIN")||userRole.equals("DELIVERY_PERSON"))&& (!userId.equals(order.getCreatedBy()))) {
+            throw new OrderException(Error.FORBIDDEN);
+        }
+
         CompanyResponseDto recipientCompany = companyClient.findCompanyById(order.getRecipientCompanyId());
         ProductInfoResponseDto product = productClient.findProductById(order.getProductId());
-        CompanyResponseDto requestCompany = companyClient.findCompanyById(product.requestCompanyId());
+        CompanyResponseDto requestCompany = companyClient.findCompanyById(product.companyId());
         UUID deliveryId = deliveryClient.getDeliveryByOrderId(orderId);
 
         return OrderDetailResponseDto.from(order, recipientCompany,requestCompany ,product, deliveryId);
@@ -98,22 +122,22 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponseDto<OrderListResponseDto> getOrders(OrderSearchRequestDto requestDto) {
+    public PageResponseDto<OrderListResponseDto> getOrders(OrderSearchRequestDto requestDto, HttpServletRequest servletRequest) {
         Page<Order> orders = findOrders(requestDto);
 
         List<UUID> recipientCompanyIds = orders.map(Order::getRecipientCompanyId).stream().distinct().toList();
         List<CompanyResponseDto> recipientCompanies = companyClient.findCompaniesByIds(recipientCompanyIds);
 
         List<UUID> productIds = orders.map(Order::getProductId).stream().distinct().toList();
-        List<ProductResponseDto> products = productClient.findProductsByIds(productIds);
+        List<ProductInfoResponseDto> products = productClient.findProductsByIds(productIds);
 
         // 응답값 반환
         Map<UUID, CompanyResponseDto> recipientCompanyMap = recipientCompanies.stream().collect(Collectors.toMap(CompanyResponseDto::companyId, c -> c));
-        Map<UUID, ProductResponseDto> productMap = products.stream().collect(Collectors.toMap(ProductResponseDto::productId, p -> p));
+        Map<UUID, ProductInfoResponseDto> productMap = products.stream().collect(Collectors.toMap(ProductInfoResponseDto::productId, p -> p));
 
         Page<OrderListResponseDto> results = orders.map(order -> {
             CompanyResponseDto recipientCompany = recipientCompanyMap.get(order.getRecipientCompanyId());
-            ProductResponseDto product = productMap.get(order.getProductId());
+            ProductInfoResponseDto product = productMap.get(order.getProductId());
             return OrderListResponseDto.from(order, recipientCompany, product);
         });
 
@@ -123,11 +147,17 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto requestDto) {
+    public OrderResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest) {
 
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
+
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+
+        if (servletRequest.getHeader("X-Authenticated-User-Role").equals("HUB_ADMIN")){
+            checkHubAdmin(userId, order.getProductId(), order.getRecipientCompanyId());
+        }
 
         UUID deliveryId = deliveryClient.getDeliveryByOrderId(orderId);
 
@@ -150,4 +180,17 @@ public class OrderServiceImpl implements OrderService {
         }
         return orderRepository.searchOrders(requestDto);
     }
+
+    private void checkHubAdmin(UUID userId, UUID productId, UUID recipientCompanyId){
+        UUID targetHubId = hubClient.findHubByUserId(userId);
+        CompanyResponseDto recipientCompany = companyClient.findCompanyById(recipientCompanyId);
+        ProductInfoResponseDto product = productClient.findProductById(productId);
+        CompanyResponseDto requestCompany = companyClient.findCompanyById(product.companyId());
+
+        if(!targetHubId.equals(recipientCompany.hubId()) && !targetHubId.equals(requestCompany.hubId())){
+            throw new OrderException(Error.FORBIDDEN);
+        }
+
+    }
+
 }
