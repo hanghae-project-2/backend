@@ -36,5 +36,7 @@ out/
 ### VS Code ###
 .vscode/
 
-/.idea/
-build/
+application.properties
+application-key.yml
+.env
+

@@ -35,6 +35,5 @@ out/
 
 ### VS Code ###
 .vscode/
-
-/.idea/
-build/
+/src/main/resources/application-key.yml
+/.env

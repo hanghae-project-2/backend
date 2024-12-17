@@ -36,5 +36,7 @@ out/
 ### VS Code ###
 .vscode/
 
-/.idea/
-build/
+### Kotlin ###
+.kotlin
+/src/main/resources/application-key.yml
+/.env

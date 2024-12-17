@@ -1,0 +1,82 @@
+eureka:
+  instance:
+    prefer-ip-address: false
+    instance-id: gateway-server
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_NAME}:${EUREKA_PORT}/${EUREKA_HOST}/
+    region: ap-northeast-2
+
+server:
+  port: 19090
+
+spring:
+  data:
+    redis:
+      port: ${REDIS_PORT}
+      host: ${REDIS_HOST}
+  config:
+    import: classpath:application-key.yml
+  application:
+    name: gateway-server
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/users/**
+        - id: hub-server
+          uri: lb://hub-server
+          predicates:
+            - Path=/hubs/**
+        - id: company-server
+          uri: lb://company-server
+          predicates:
+            - Path=/companies/**
+        - id: delivery-service
+          uri: lb://delivery-service
+          predicates:
+            - Path=/deliveries/**
+        - id: delivery-route-server
+          uri: lb://delivery-route-server
+          predicates:
+            - Path=/delivery-route/**
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/products/**
+        - id: slack-service
+          uri: lb://slack-service
+          predicates:
+            - Path=/slack/**
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/orders/**
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: User Service
+        url: /user-service/api-docs
+      - name: Hub Service
+        url: /hub-server/api-docs
+      - name: Company Service
+        url: /company-server/api-docs
+      - name: Delivery Service
+        url: /delivery-service/api-docs
+      - name: Delivery Route Service
+        url: /delivery-route-server/api-docs
+      - name: Product Service
+        url: /product-service/api-docs
+      - name: Slack Service
+        url: /slack-service/api-docs
+      - name: Order Service
+        url: /order-service/api-docs
