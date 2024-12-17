@@ -8,6 +8,7 @@ import com.sparta.deliverypersons.domain.model.DeliveryType;
 import com.sparta.deliverypersons.infrastructure.messaging.producer.DeliveryEventProducer;
 import com.sparta.deliverypersons.infrastructure.repository.DeliveryPersonsJpaRepository;
 import com.sparta.deliverypersons.infrastructure.security.JwtUtil;
+import com.sparta.deliverypersons.presentation.dto.request.CreateDeliveryPersonRequest;
 import com.sparta.deliverypersons.presentation.dto.request.UpdateDeliveryPersonRequest;
 import com.sparta.deliverypersons.presentation.dto.response.CreateDeliveryPersonResponse;
 import com.sparta.deliverypersons.presentation.dto.response.DeleteDeliveryPersonResponse;
@@ -34,10 +35,12 @@ public class DeliveryPersonsService {
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public CreateDeliveryPersonResponse createDeliveryPerson(UUID userId, UUID hubId, String deliveryTypeString) {
+    public CreateDeliveryPersonResponse createDeliveryPerson(CreateDeliveryPersonRequest request) throws CustomException {
+        UUID hubId = request.getHubId();
+        UUID userId = request.getUserId();
         DeliveryType deliveryType;
         try {
-            deliveryType = DeliveryType.valueOf(deliveryTypeString.toUpperCase());
+            deliveryType = DeliveryType.valueOf(request.getDeliveryType().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new CustomException(ErrorCode.INVALID_DELIVERY_TYPE);
         }

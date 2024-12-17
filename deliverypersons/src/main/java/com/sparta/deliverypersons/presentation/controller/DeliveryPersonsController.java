@@ -1,6 +1,7 @@
 package com.sparta.deliverypersons.presentation.controller;
 
 import com.sparta.deliverypersons.application.service.DeliveryPersonsService;
+import com.sparta.deliverypersons.presentation.dto.request.CreateDeliveryPersonRequest;
 import com.sparta.deliverypersons.presentation.dto.request.UpdateDeliveryPersonRequest;
 import com.sparta.deliverypersons.presentation.dto.response.CreateDeliveryPersonResponse;
 import com.sparta.deliverypersons.presentation.dto.response.DeleteDeliveryPersonResponse;
@@ -23,11 +24,9 @@ public class DeliveryPersonsController {
 
     @PostMapping
     public Response<CreateDeliveryPersonResponse> createDeliveryPerson(
-            @RequestParam UUID userId,
-            @RequestParam(required = false) UUID hubId,
-            @RequestParam String deliveryType) {
+            @RequestBody CreateDeliveryPersonRequest createDeliveryPersonRequest) {
 
-        CreateDeliveryPersonResponse response = deliveryPersonsService.createDeliveryPerson(userId, hubId, deliveryType);
+        CreateDeliveryPersonResponse response = deliveryPersonsService.createDeliveryPerson(createDeliveryPersonRequest);
 
         return new Response<>(
                 HttpStatus.CREATED.value(),
