@@ -38,3 +38,6 @@ out/
 
 /.idea/
 build/
+
+application-key.yml
+.env

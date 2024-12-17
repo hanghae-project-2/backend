@@ -18,6 +18,8 @@ import java.util.*
 interface HubJpaRepository : JpaRepository<Hub, UUID> {
 
     fun findByNameIs(name: String): Optional<Hub>
+
+    fun findByManager(manager: UUID): Hub?
 }
 
 @Repository
@@ -43,6 +45,10 @@ class HubRepositoryImpl(
 
     override fun existsById(id: UUID): Boolean {
         return hubJpaRepository.existsById(id)
+    }
+
+    override fun findByManager(manager: UUID): Hub? {
+        return hubJpaRepository.findByManager(manager)
     }
 
     override fun findByIds(ids: List<UUID>): List<Hub> {

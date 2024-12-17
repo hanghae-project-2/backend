@@ -27,10 +27,14 @@ class CompanyService(
 ) {
 
     @Transactional
-    fun registerCompany(servletRequest: HttpServletRequest, request: RegisterCompanyRequestDto): UUID {
+    fun registerCompany(servletRequest: HttpServletRequest, request: RegisterCompanyRequestDto): UUID? {
 
         val createdBy = servletRequest.getHeader("X-Authenticated-User-Id")
         val role = servletRequest.getHeader("X-Authenticated-User-Role")
+
+        if (role == null || (role != "HUB_ADMIN" && role != "MASTER")) {
+            throw AccessDeniedException()
+        }
 
         val hubId = extractUUID(request.hubId)
 
@@ -44,10 +48,15 @@ class CompanyService(
     }
 
     @Transactional
-    fun updateCompany(servletRequest: HttpServletRequest, companyId: UUID, request: BaseCompanyRequestDto): UUID {
+    fun updateCompany(servletRequest: HttpServletRequest, companyId: UUID, request: BaseCompanyRequestDto): UUID? {
 
         val userId = servletRequest.getHeader("X-Authenticated-User-Id")
         val role = servletRequest.getHeader("X-Authenticated-User-Role")
+
+        if (role == null || (role != "COMPANY_ADMIN" && role != "HUB_ADMIN" && role != "MASTER")) {
+            throw AccessDeniedException()
+        }
+
 
         val company = companyRepository.findByIdOrNull(companyId) ?: throw NotFoundCompanyException()
 

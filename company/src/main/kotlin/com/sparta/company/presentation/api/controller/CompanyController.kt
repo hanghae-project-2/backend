@@ -1,7 +1,6 @@
 package com.sparta.company.presentation.api.controller
 
 import com.sparta.company.application.service.CompanyService
-import com.sparta.company.libs.RoleValidation
 import com.sparta.company.presentation.api.controller.docs.CompanyControllerDocs
 import com.sparta.company.presentation.api.request.BaseCompanyRequest
 import com.sparta.company.presentation.api.request.CompanySearchRequest
@@ -31,7 +30,6 @@ class CompanyController(
 ) : CompanyControllerDocs() {
 
     @PostMapping
-    @RoleValidation("MASTER", "HUB_ADMIN")
     override fun registerCompany(
         @RequestBody request: RegisterCompanyRequest,
         servletRequest: HttpServletRequest
@@ -43,7 +41,6 @@ class CompanyController(
         )
 
     @PatchMapping("/{companyId}")
-    @RoleValidation("MASTER", "HUB_ADMIN", "COMPANY_ADMIN")
     override fun updateCompany(
         @PathVariable companyId: UUID,
         @RequestBody request: BaseCompanyRequest,
@@ -56,7 +53,6 @@ class CompanyController(
         )
 
     @GetMapping("/{companyId}")
-    @RoleValidation("ANY_ROLE")
     override fun getCompany(
         @PathVariable companyId: UUID
     ): Response<CompanyResponse> =
@@ -67,7 +63,6 @@ class CompanyController(
         )
 
     @GetMapping("/search")
-    @RoleValidation("ANY_ROLE")
     override fun searchCompany(
         pageable: Pageable,
         request: CompanySearchRequest
