@@ -50,6 +50,12 @@ class InternalHubController(
     ): HubResponse =
         hubService.findHubById(hubId).toResponse()
 
+    @GetMapping("/hubs/find/user/{userId}")
+    fun findHubByUserId(
+        @PathVariable userId: UUID
+    ): UUID =
+        hubService.findHubByUserId(userId)
+
     @PostMapping("/hubs/batch")
     fun findHubsByIds(
         @RequestBody ids: List<UUID>

@@ -250,6 +250,11 @@ class HubService(
         return hubRouteRepository.findByIds(hubRouteIdList)
     }
 
+    @Transactional(readOnly = true)
+    fun findHubByUserId(userId: UUID): UUID {
+        return hubRepository.findByManager(userId)?.id ?: throw NotFoundHubException()
+    }
+
     private fun updateForOptimalHubRoutes(hubRoutes: List<HubRoute>) {
 
         val createRouteInfoGraph = hubRoutes.groupBy({ it.startHub!!.name }) { it.toRouteInfo() }
