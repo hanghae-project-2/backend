@@ -43,6 +43,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto createOrder(OrderCreateRequestDto request, HttpServletRequest servletRequest) {
 
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+        if(userRole==null){
+            throw new OrderException(Error.FORBIDDEN);
+        }
 
         ProductInfoResponseDto product = productClient.findProductById(request.productId());
 
@@ -79,13 +83,18 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public UUID deleteOrder(UUID orderId, HttpServletRequest servletRequest) {
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+
+        if (userRole==null || !(userRole.equals("MASTER") && userRole.equals("HUB_ADMIN")) ){
+            throw new OrderException(Error.FORBIDDEN);
+        }
+
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
 
-        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
-
-        if (servletRequest.getHeader("X-Authenticated-User-Role").equals("HUB_ADMIN")){
+        if(userRole.equals("HUB_ADMIN")){
             checkHubAdmin(userId, order.getProductId(), order.getRecipientCompanyId());
         }
 
@@ -99,12 +108,17 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     @Override
     public OrderDetailResponseDto getOrderById(UUID orderId, HttpServletRequest servletRequest) {
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+
+        if(userRole==null){
+            throw new OrderException(Error.FORBIDDEN);
+        }
+
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
 
-        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
-        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
 
         if (userRole.equals("HUB_ADMIN")){
             checkHubAdmin(userId, order.getProductId(), order.getRecipientCompanyId());
@@ -149,13 +163,17 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto updateOrder(UUID orderId, OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest) {
 
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+        if (userRole==null || !(userRole.equals("MASTER") && userRole.equals("HUB_ADMIN")) ){
+            throw new OrderException(Error.FORBIDDEN);
+        }
+
         Order order = orderRepository.findByIdAndIsDeleteFalse(orderId).orElseThrow(
                 () -> new OrderException(Error.NOT_FOUND_ORDER)
         );
 
-        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
-
-        if (servletRequest.getHeader("X-Authenticated-User-Role").equals("HUB_ADMIN")){
+        if(userRole.equals("HUB_ADMIN")){
             checkHubAdmin(userId, order.getProductId(), order.getRecipientCompanyId());
         }
 

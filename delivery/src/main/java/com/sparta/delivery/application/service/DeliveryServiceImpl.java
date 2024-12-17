@@ -39,12 +39,17 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Transactional(readOnly = true)
     public DeliveryDetailResponseDto getDeliveryById(UUID deliveryId, HttpServletRequest servletRequest) {
 
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+
+        if(userRole == null){
+            throw new DeliveryException(Error.FORBIDDEN);
+        }
+
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
         
-        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
-        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
 
         if(userRole.equals("HUB_ADMIN")){
             checkHubAdmin(userId, delivery);
@@ -63,12 +68,17 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     @Transactional
     public UUID updateDelivery(UUID deliveryId, DeliveryStatus status, HttpServletRequest servletRequest) {
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+
+        if(userRole == null || userRole.equals("COMPANY_ADMIN")){
+            throw new DeliveryException(Error.FORBIDDEN);
+        }
+
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
 
-        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
-        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
 
         if(userRole.equals("HUB_ADMIN")){
             checkHubAdmin(userId, delivery);
@@ -85,13 +95,18 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     @Transactional
     public UUID deleteDelivery(UUID deliveryId, HttpServletRequest servletRequest) {
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+
+        if(userRole == null || userRole.equals("DELIVERY_PERSON")||userRole.equals("COMPANY_ADMIN")){
+            throw new DeliveryException(Error.FORBIDDEN);
+        }
+
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
 
-        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
-
-        if(servletRequest.getHeader("X-Authenticated-User-Role").equals("HUB_ADMIN")){
+        if(userRole.equals("HUB_ADMIN")){
             checkHubAdmin(userId, delivery);
         }
 
@@ -139,9 +154,23 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Transactional
     @Override
     public UUID complateDelivery(UUID deliveryId, DeliveryComplateRequestDto requestDto, HttpServletRequest servletRequest) {
+        UUID userId = UUID.fromString(servletRequest.getHeader("X-Authenticated-User-Id"));
+        String userRole = servletRequest.getHeader("X-Authenticated-User-Role");
+
+        if(userRole == null || userRole.equals("COMPANY_ADMIN")){
+            throw new DeliveryException(Error.FORBIDDEN);
+        }
+
         Delivery delivery = deliveryRepository.findById(deliveryId).orElseThrow(
                 () -> new DeliveryException(Error.NOT_FOUND_DELIVERY)
         );
+
+
+        if(userRole.equals("HUB_ADMIN")){
+            checkHubAdmin(userId, delivery);
+        } else if (userRole.equals("DELIVERY_PERSON")) {
+            checkDeliveryPerson(userId, delivery);
+        }
 
         delivery.complateDelivery(requestDto);
 
