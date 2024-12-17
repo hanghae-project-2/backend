@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 import java.util.UUID;
 
-@FeignClient(name="product")
+@FeignClient(name="product-service")
 public interface ProductClient {
 
     @GetMapping("/products/ids")

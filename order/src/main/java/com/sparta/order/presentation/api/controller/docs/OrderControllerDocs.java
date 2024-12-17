@@ -15,10 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.util.UUID;
 
@@ -58,7 +55,7 @@ public abstract class OrderControllerDocs {
     })
     @Operation(summary = "주문 생성", description = "주문 생성 API")
     @PostMapping("/orders")
-    public abstract Response<OrderResponseDto> createOrder(@RequestBody OrderCreateRequestDto requestDto, HttpServletRequest servletRequest);
+    public abstract Response<UUID> createOrder(@RequestBody OrderCreateRequestDto requestDto, HttpServletRequest servletRequest);
 
     @ApiResponses(value = {
             @ApiResponse(
@@ -86,7 +83,7 @@ public abstract class OrderControllerDocs {
     })
     @Operation(summary = "주문 삭제", description = "주문 삭제 API")
     @DeleteMapping("/orders/{orderId}")
-    public abstract Response<UUID> deleteOrder(@PathVariable UUID orderId, HttpServletRequest servletRequest);
+    public abstract Response<UUID> deleteOrder(@PathVariable java.util.UUID orderId, HttpServletRequest servletRequest);
 
     @ApiResponses(value = {
             @ApiResponse(
@@ -114,7 +111,7 @@ public abstract class OrderControllerDocs {
     })
     @Operation(summary = "주문 조회(단건)", description = "주문 조회 API")
     @GetMapping("/orders/{orderId}")
-    public abstract Response<OrderDetailResponseDto> getOrderById(@PathVariable UUID orderId, HttpServletRequest servletRequest);
+    public abstract Response<OrderDetailResponseDto> getOrderById(@PathVariable java.util.UUID orderId, HttpServletRequest servletRequest);
 
     @ApiResponses(value = {
             @ApiResponse(
@@ -142,7 +139,7 @@ public abstract class OrderControllerDocs {
     })
     @Operation(summary = "주문 수정", description = "주문 수정 API")
     @PatchMapping("/orders/{orderId}")
-    public abstract Response<OrderResponseDto> updateOrder(@PathVariable UUID orderId, @RequestBody OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest);
+    public abstract Response<UUID> updateOrder(@PathVariable java.util.UUID orderId, @RequestBody OrderUpdateRequestDto requestDto, HttpServletRequest servletRequest);
 
     @ApiResponses(value = {
             @ApiResponse(
