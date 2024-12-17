@@ -58,80 +58,67 @@
 
 ## 🚀 **주요 기능**
 
-### **1. 주문 기능 ** 
+### **order 서비스**
 
-* 사용자가 주문을 생성하고 관리할 수 있도록 하는 주문 생성, 수정, 조회 기능을 개발
-* 주문 생성 이벤트를 Kafka를 통해 다른 서비스와 비동기로 통신하도록 구현
+사용자가 주문을 생성하고 관리할 수 있도록 하는 주문 생성, 수정, 조회 기능을 개발
+주문 생성 이벤트를 Kafka를 통해 다른 서비스와 비동기로 통신하도록 구현
 
----
+### **delivery 서비스**
 
-### **2. 배송 기능**
-* 주문 데이터를 기반으로 배송 정보를 처리하는 배송 생성, 수정, 삭제, 조회 기능을 구현
-* Kafka Consumer를 통해 order 서비스에서 발생한 이벤트를 실시간으로 수신하고 배송 상태를 업데이트하는 로직을 추가, 배송 생성 이벤트를 Kafka를 통해 다른 서비스와 비동기로 통신하도록 구현
+주문 데이터를 기반으로 배송 정보를 처리하는 배송 생성, 수정, 삭제, 조회 기능을 구현
+Kafka Consumer를 통해 order 서비스에서 발생한 이벤트를 실시간으로 수신하고 배송 상태를 업데이트하는 로직을 추가, 배송 생성 이벤트를 Kafka를 통해 다른 서비스와 비동기로 통신하도록 구현
 
----
+
+### **2. 배송 상태 업데이트**
+
+배송 상태를 `요청됨` → `배송 중` → `배송 완료` 순으로 업데이트
+
+Redis를 통한 동시성 제어 및 Resilience4j로 Fallback 처리
+
 
 
 ---
 
 ## 🛠️ **트러블 슈팅**
 
-### **1. JsonDeserializer 역직렬화 문제**
-- **문제**:  Kafka Consumer를 설정하던 중 JsonDeserializer가 역직렬화할 대상 클래스를 찾지 못하면서 ClassNotFoundException이 발생
-- **해결**: Kafka 설정 파일인 KafkaConsumerConfig.java에 다른 코드들을 지운 뒤 kafkaTemplate 설정 코드만 남기고 yml의 kafka 설정을 통해 해결
+### **1. 카프카 설정 문제**
+- **문제**: Kafka Consumer를 설정하던 중 JsonDeserializer가 역직렬화할 대상 클래스를 찾지 못하면서 ClassNotFoundException이 발생했습니다.
+- **해결**: Kafka 설정 파일인 KafkaConsumerConfig.java에 기타 다른 설정들을 아예 지운뒤 해당 코드만 남기고 yml 을 통해 최소 설정만 했더니 오히려 발생했던 에러가 사라졌습니다.
 
-### **2. **
-- **문제**: 
+```java
+@Configuration
+@EnableKafka
+public class KafkaConsumerConfig {
+  @Bean
+  public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory) {
+    return new KafkaTemplate<>(producerFactory);
+  }
+}
+```
+
+
+### **2. 데이터 누적 문제**
+- **문제**: 오래된 데이터로 인해 조회 성능 저하.  
 - **해결**: 
-  1. 
-  2.  
+  1. **MariaDB 인덱스 설정**  
+  2. **MongoDB로 데이터 이관**  
 
 ---
 
-## 🏃‍♂️ **프로젝트 실행 방법**
-
-### **1. Repository Clone**
-git clone https://github.com/ksngh/delivery_service.git  
-cd delivery_service
-
----
-
-### **2. Docker로 인프라 실행**
-docker run -d --name mariadb-container -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=delivery_db -p 3306:3306 mariadb:latest  
-docker run -d --name redis-container -p 6379:6379 redis:latest  
-docker run -d --name mongodb-container -p 27017:27017 mongo:6.0  
-docker run -d --name prometheus -p 9090:9090 prom/prometheus
-
----
-
-### **3. Application Build 및 실행**
-./gradlew build  
-cd build/libs  
-java -jar delivery_service-0.0.1-SNAPSHOT.jar
-
----
-
-### **4. API 문서 확인**
-빌드 후 RestDocs를 통해 확인:  
-
-/build/docs/asciidoc/index.html
-
----
 
 ## 🧩 **개선점**
 - 메시지 큐(Kafka, RabbitMQ)를 사용해 이벤트 기반 시스템으로 개선.
 - ElasticSearch를 활용하여 배송 이력 조회 성능 최적화.
 - JPA Custom Repository 패턴 적용으로 코드 유연성 향상.
-- Test를 세분화해 진행 필요. 
 
 ---
 
-## ⚙️ **작업 방식**
-1. **이슈 생성**: 문제나 기능 단위로 이슈를 생성합니다.  
-2. **브랜치 생성**: 기능별 브랜치에서 개발을 진행합니다.  
-3. **Pull Request**: 코드 리뷰를 통해 병합합니다.
+## 🎤 **소감**
 
-## **소감**
-* 혜정 : 짧은 시간동안 너무나 부족한 점을 많이 느끼고 또 공부의 필요성을 느꼈던 2주 였습니다.
-  그동안 접해보지 못했던 새로운 기술들과 구조를 배울 수 있던 좋은 시간이었던거 같습니다!
-  다들 많이 도와주시고 알려주셔서 감사합니다!
+### **혜정**  
+
+> Test를 세분화해 미리 진행하지 않고 마지막에 몰아서 한 점이 부족하다 느껴졌고 또 다른 조원 분들에 비해 msa 나 docker 를 접해보지 못해 다루는데에 미숙했던 점이 보안되야할 점이라고 느껴집니다. </br>
+> 짧은 시간동안 너무나 부족한 점을 많이 느끼고 또 공부의 필요성을 느꼈던 2주 였습니다. </br>
+> 그동안 접해보지 못했던 새로운 기술들과 구조를 배울 수 있던 좋은 시간이었던거 같습니다!
+> 다들 많이 도와주시고 알려주셔서 감사합니다!
+
