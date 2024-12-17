@@ -26,8 +26,7 @@ abstract class BaseEntity {
     @CreatedDate
     @Column(updatable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    var createdAt: LocalDateTime? = LocalDateTime.now()
-        protected set
+    var createdAt: LocalDateTime? = null
 
     var createdBy: UUID? = null
         protected set
@@ -35,7 +34,6 @@ abstract class BaseEntity {
     @LastModifiedDate
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     var updatedAt: LocalDateTime? = null
-        protected set
 
     var updatedBy: UUID? = null
         protected set

@@ -31,7 +31,7 @@ spring:
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/users/**
+            - Path=/users/**, /auth/**
         - id: hub-server
           uri: lb://hub-server
           predicates:

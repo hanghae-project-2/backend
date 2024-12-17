@@ -6,6 +6,7 @@ create table hub
     address    varchar(255) not null,
     longitude  double       not null,
     latitude   double       not null,
+    manager    varchar(255) not null,
     is_delete  bit          not null,
     is_public  bit          not null,
     created_at datetime(6)  null,

@@ -1,8 +1,11 @@
 package com.sparta.user.infrastructure.security;
 
-import com.sparta.user.presentation.dto.response.AuthResponse;
 import com.sparta.user.domain.User;
-import io.jsonwebtoken.*;
+import com.sparta.user.presentation.dto.response.AuthResponse;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +17,12 @@ import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Slf4j(topic = "JWT 관련 로그")
 @Component
