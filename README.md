@@ -78,6 +78,12 @@ Kafka Consumer를 통해 order 서비스에서 발행된 이벤트를 수신하�
 Kafak Consumer를 통해 delivery 서비스를 수신하고 hub, company, order, user 등에 feignclient를 통해 메세지를 generate하여 slack으로 발행
 
 
+### **user 서비스**
+인증/인가와 사용자의 생성, 수정, 삭제, 조회 기능을 제공하며 회원 관리를 담당.</br>
+중요 API에는 AOP 기반의 사용자 상태 검증을 적용해 삭제된 사용자나 비활성화된 사용자의 접근을 차단.
+
+### **deliverypersons 서비스**
+배송 담당자를 관리하는 서비스로, 배송 담당자의 생성, 수정, 삭제, 조회 기능을 제공.</br>
 
 ---
 
@@ -124,6 +130,31 @@ public class GlobalExceptionHandler {
 }
 ```
 
+
+### **3. 회원 삭제 시 접근 제한 문제 (희진)**
+- **문제**: 회원이 삭제되었더라도 이미 발급된 JWT 토큰이 유효한 상태라면 서버에 접근할 수 있는 문제가 발생했습니다.
+- **해결**: 
+1. 레디스 기반 블랙리스트를 사용해 토큰을 무효화하려 했으나, 이미 발급된 토큰을 서버가 알 수 없어 실시간 차단이 어려웠습니다.
+2. AOP 기반의 횡단 관심사 처리를 통해 공통 검증 로직을 구현했습니다.
+3. @CheckUserStatus 어노테이션을 생성하여 중요 API에만 사용자 상태 검증을 적용.
+4. AOP를 통해 API 진입 시점에서 사용자 상태를 검증하도록 구현했습니다.
+
+```java
+@GetMapping("/{id}")
+@CheckUserStatus
+public Response<UserResponse> getUserById(@PathVariable UUID id) {
+
+    UserResponse user = userService.getUserById(id);
+
+    return new Response<>(
+            HttpStatus.OK.value(),
+            HttpStatus.OK.getReasonPhrase(),
+            user
+    );
+}
+```
+
+
 ---
 
 
@@ -149,5 +180,14 @@ public class GlobalExceptionHandler {
 > 팀원들이 열심히 잘 해주셔서 감사했고, 자극도 많이 받아가는 시간이었습니다!
 
 ### **준석**
+
+> 시스템의 흐름을 머리속으로 그려보면서 그에 맞는 로직을 생각해보면서 참 재미있다고 느꼈습니다.
+> 다만, 재미만 있었지 프로젝트를 진행하면서 생각했던 흐름이 엉망이었다는걸 느끼게 되었고,
+> 플로우차트나 시퀀스 다이어그램등을 조금 더 활용할 수 있으면 좋겠다는 생각이 참 많이 들었습니다.
+> 혼자 생각했던 엉망인 흐름때문에 팀원들에게 민폐를 끼친것같아 죄송하네요. 끝까지 짜증내지않고 들어주셔서 감사했습니다.
+
 ### **희진**
+> 멋진 팀을 만나 많이 성장할 수 있었습니다. msa, kafka 등 처음 접해보는 개념이 많아서 개발을 하는데,
+> 많은 시간 지체가 있었습니다. 결국 시간 조절 문제로 제가 맡은 부분을 완성도 있게 끝내지 못하여 많은 아쉬움이 남습니다.
+> 그럼에도 팀이 있었기에 여기까지 할 수 있었던 거 같습니다. 감사합니다.
 
