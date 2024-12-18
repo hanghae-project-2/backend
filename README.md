@@ -53,6 +53,7 @@
 
 서비스의 인프라는 다음과 같이 구성되어 있습니다:  
 <img src="https://github.com/user-attachments/assets/482578dd-c752-49be-aa65-0ab3655e2e78" alt="delivery_service_infra" style="border: 1px solid #ddd; border-radius: 5px; width: 500px;">
+![kafka drawio (1)](https://github.com/user-attachments/assets/d7c4da03-8365-4ea7-9edf-06a3558cd3d2)
 
 ---
 
